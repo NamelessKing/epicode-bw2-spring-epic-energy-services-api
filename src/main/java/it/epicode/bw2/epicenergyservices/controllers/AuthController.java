@@ -3,6 +3,7 @@ package it.epicode.bw2.epicenergyservices.controllers;
 import it.epicode.bw2.epicenergyservices.dto.request.LoginDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.RegisterDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.LoginResponseDTO;
+import it.epicode.bw2.epicenergyservices.dto.response.UserResponseDTO;
 import it.epicode.bw2.epicenergyservices.entities.User;
 import it.epicode.bw2.epicenergyservices.exceptions.ValidationException;
 import it.epicode.bw2.epicenergyservices.services.AuthService;
@@ -144,7 +145,7 @@ public class AuthController {
         @ApiResponse(
             responseCode = "201",
             description = "Utente registrato con successo",
-            content = @Content(schema = @Schema(implementation = User.class))
+            content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
         ),
         @ApiResponse(
             responseCode = "400",
@@ -155,7 +156,7 @@ public class AuthController {
             description = "Errori di validazione dettagliati"
         )
     })
-    public User register(@RequestBody @Valid RegisterDTO payload,
+    public UserResponseDTO register(@RequestBody @Valid RegisterDTO payload,
                         BindingResult validationResult) {
         
         // Gestisci errori di validazione
@@ -168,6 +169,15 @@ public class AuthController {
         }
         
         // Se validazione OK, registra l'utente
-        return usersService.save(payload);
+        User saved = usersService.save(payload);
+        return new UserResponseDTO(
+            saved.getId(),
+            saved.getUsername(),
+            saved.getEmail(),
+            saved.getFirstName(),
+            saved.getLastName(),
+            saved.getAvatarUrl(),
+            saved.getRole()
+        );
     }
 }

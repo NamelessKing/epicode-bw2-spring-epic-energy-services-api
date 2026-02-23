@@ -1,5 +1,7 @@
 package it.epicode.bw2.epicenergyservices.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,6 +29,14 @@ import java.util.List;
     @UniqueConstraint(columnNames = "username"),
     @UniqueConstraint(columnNames = "email")
 })
+@JsonIgnoreProperties({
+    "password",
+    "authorities",
+    "accountNonExpired",
+    "accountNonLocked",
+    "credentialsNonExpired",
+    "enabled"
+})
 public class User implements UserDetails {
     
     @Id
@@ -39,6 +49,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
     
+    @JsonIgnore
     @Column(nullable = false, name = "password_hash")
     private String passwordHash;
     
