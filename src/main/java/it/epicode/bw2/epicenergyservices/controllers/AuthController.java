@@ -2,6 +2,8 @@ package it.epicode.bw2.epicenergyservices.controllers;
 
 import it.epicode.bw2.epicenergyservices.dto.request.LoginDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.RegisterDTO;
+import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
+import it.epicode.bw2.epicenergyservices.dto.response.ErrorsWithListDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.LoginResponseDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.UserResponseDTO;
 import it.epicode.bw2.epicenergyservices.entities.User;
@@ -81,15 +83,18 @@ public class AuthController {
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "Email non valida o password troppo corta"
+            description = "Email non valida o password troppo corta",
+            content = @Content(schema = @Schema(implementation = ErrorsWithListDTO.class))
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Credenziali errate (email non esiste o password sbagliata)"
+            description = "Credenziali errate (email non esiste o password sbagliata)",
+            content = @Content(schema = @Schema(implementation = ErrorsDTO.class))
         ),
         @ApiResponse(
             responseCode = "404",
-            description = "Utente con questa email non trovato"
+            description = "Utente con questa email non trovato",
+            content = @Content(schema = @Schema(implementation = ErrorsDTO.class))
         )
     })
     public LoginResponseDTO login(@RequestBody @Valid LoginDTO payload) {
@@ -149,11 +154,13 @@ public class AuthController {
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "Dati invalidi, email/username già in uso, o errori di validazione"
+            description = "Dati invalidi o duplicati",
+            content = @Content(schema = @Schema(implementation = ErrorsDTO.class))
         ),
         @ApiResponse(
             responseCode = "422",
-            description = "Errori di validazione dettagliati"
+            description = "Errori di validazione dettagliati",
+            content = @Content(schema = @Schema(implementation = ErrorsWithListDTO.class))
         )
     })
     public UserResponseDTO register(@RequestBody @Valid RegisterDTO payload,
