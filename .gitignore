@@ -1,9 +1,23 @@
 HELP.md
+
+# ==================== ENVIRONMENT & SECRETS ====================
+env.properties
+.env
+*.properties.local
+
+# ==================== BUILD ====================
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+*.class
+*.jar
+*.war
 
+# ==================== IDE ====================
 ### STS ###
 .apt_generated
 .classpath
@@ -25,9 +39,21 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+*.swp
+*.swo
+*~
+
+# ==================== OS ====================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==================== LOGS ====================
+*.log
+logs/
+
+# ==================== MAVEN ====================
+.m2/
