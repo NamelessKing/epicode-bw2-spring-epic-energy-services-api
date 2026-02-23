@@ -1,24 +1,22 @@
 package it.epicode.bw2.epicenergyservices.repositories;
 
-import it.epicode.bw2.epicenergyservices.entities.User;
+import it.epicode.bw2.epicenergyservices.entities.Utente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 
 @Repository
-public interface UsersRepository extends JpaRepository<User, Long> {
-    
+public interface UtentiRepository extends JpaRepository<Utente, Long> {
 
-    Optional<User> findByEmail(String email);
-    
 
-    Optional<User> findByUsername(String username);
-    
+    Utente findByEmail(String email);
+
+
+    Utente findByUsername(String username);
+
 
     boolean existsByEmail(String email);
-    
+
 
     boolean existsByUsername(String username);
 }
