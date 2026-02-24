@@ -1,6 +1,9 @@
 package it.epicode.bw2.epicenergyservices.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 
@@ -12,20 +15,57 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(nullable = false)
+    @NotBlank(message = "Ragione sociale obbligatoria")
     private String ragioneSociale;
+
+    @Column(nullable = false, unique = true)
+    @NotBlank(message = "Partita iva obbligatoria")
     private String partitaIva;
+
+    @Column(nullable = false, unique = true)
+    @NotBlank(message = "Email cliente obbligatoria")
+    @Email(message = "Formato email cliente non valida")
     private String email;
+
+    @Column(nullable = false)
     private LocalDate dataInserimento;
+
+    @Column(nullable = true)
     private LocalDate dataUltimoContatto;
+
+    @Column(nullable = false)
+    @PositiveOrZero
     private double fatturatoAnnuale;
+
+    @Column(nullable = false, unique = true)
+    @Email(message = "Formato pec non valido")
     private String pec;
+
+    @Column
     private String telefono;
+
+    @Column
     private String logoAziendale;
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private TipoAzienda tipo;
+
+    @Column(nullable = false, unique = true)
+    @Email(message = "Formato email contatto non valido")
     private String emailContatto;
+
+    @Column(nullable = false)
+    @NotBlank(message = "Nome contatto obbligatorio")
     private String nomeContatto;
+
+    @Column(nullable = false)
+    @NotBlank(message = "Cognome contatto obbligatorio")
     private String cognomeContatto;
+
+    @Column(nullable = false)
+    @NotBlank(message = "Telefono contatto obbligatorio")
     private String telefonoContatto;
 
     //relazione OneToOne con id_sede_legale

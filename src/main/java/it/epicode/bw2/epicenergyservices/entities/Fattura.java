@@ -1,6 +1,8 @@
 package it.epicode.bw2.epicenergyservices.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,30 +13,37 @@ public class Fattura {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(nullable = false)
     private LocalDate data;
+
+    @Column(nullable = false)
+    @PositiveOrZero
     private double importo;
-    private long numero;//secondo me può essere l'id
+
+    @Column(nullable = false, unique = true)
+    @NotBlank(message = "Il numero della fattura è obbligatorio")
+    private long numero;
 
     //Relazione ManyToOne con id_cliente
     @ManyToOne
-    @JoinColumn(name = "id_cliente")
+    @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
 
     //relazione ManyToOne con id_stato_fattura
     @ManyToOne
-    @JoinColumn(name = "id_stato_fattura")
+    @JoinColumn(name = "id_stato_fattura", nullable = false)
     private StatoFattura statoFattura;
 
 
     //relazione ManyToOne con id_utente
 //    @ManyToOne
-//    @JoinColumn(name="id_utente")
+//    @JoinColumn(name="id_utente", nullable=false)
 //    private Utente utente;
 
     public Fattura() {
     }
 
-    ;
 
     public Fattura(LocalDate data, double importo, long numero, StatoFattura statoFattura) {
         this.data = data;
