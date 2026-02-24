@@ -111,8 +111,7 @@ public class Cliente {
     public long getId() {
         return id;
     }
-
-
+    
     public String getPartitaIva() {
         return partitaIva;
     }
