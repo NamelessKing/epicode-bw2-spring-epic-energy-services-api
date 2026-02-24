@@ -2,9 +2,13 @@ package it.epicode.bw2.epicenergyservices.runners;
 
 import it.epicode.bw2.epicenergyservices.dto.request.RegisterDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.RuoliDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.StatoFatturaDTO;
 import it.epicode.bw2.epicenergyservices.entities.Ruolo;
+import it.epicode.bw2.epicenergyservices.entities.StatoFattura;
 import it.epicode.bw2.epicenergyservices.entities.Utente;
+import it.epicode.bw2.epicenergyservices.services.FatturaService;
 import it.epicode.bw2.epicenergyservices.services.RuoliService;
+import it.epicode.bw2.epicenergyservices.services.StatoFatturaService;
 import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -20,17 +24,19 @@ public class Runner implements CommandLineRunner {
 
     private final RuoliService ruoliService;
     private final UtentiService utentiService;
+    private final StatoFatturaService statoFatturaService;
 
     @Autowired
-    public Runner(RuoliService ruoliService, UtentiService utentiService) {
+    public Runner(RuoliService ruoliService, UtentiService utentiService, StatoFatturaService statoFatturaService) {
         this.ruoliService = ruoliService;
         this.utentiService = utentiService;
+        this.statoFatturaService = statoFatturaService;
     }
 
     @Override
     public void run(String... args) throws Exception {
         System.out.println("Inizio seeding dei dati...");
-        
+
         // Crea ruolo USER
         boolean ruoloUserExistInBd = this.ruoliService.existsByRuolo("USER");
         if (!ruoloUserExistInBd) {
@@ -66,6 +72,14 @@ public class Runner implements CommandLineRunner {
             Utente utenteAdmin = this.utentiService.addUtente(admin, "ADMIN");
             System.out.println("Utente admin creato: " + utenteAdmin.getUsername());
         }
+
+        //crea stato fattura
+        boolean statoFatturaExistFromDB = this.statoFatturaService.existByStato("EMESSA");
+        if (!statoFatturaExistFromDB) {
+            StatoFattura statoEmessa = this.statoFatturaService.save(new StatoFatturaDTO("EMESSA"));
+            System.out.println("Stato creato: " + statoEmessa.toString());
+        }
+
 
         System.out.println("Seeding completato!");
     }

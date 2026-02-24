@@ -1,5 +1,6 @@
-package it.epicode.bw2.epicenergyservices.dto.response;
+package it.epicode.bw2.epicenergyservices.dto.request;
 
+import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
 import it.epicode.bw2.epicenergyservices.entities.TipoAzienda;
 import jakarta.validation.constraints.*;
 
@@ -48,6 +49,11 @@ public record ClienteDTO(
                 regexp = "^[0-9 +()-]{6,20}$",
                 message = "Il numero di telefono del contatto non è valido"
         )
-        String telefonoContatto
+        String telefonoContatto,
+
+        @Positive
+        long idSedeLegale,
+        @Positive
+        long idSedeOperativa
 ) {
 }

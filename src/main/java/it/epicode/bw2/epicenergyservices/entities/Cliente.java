@@ -83,7 +83,22 @@ public class Cliente {
     }
 
 
-    public Cliente(String ragioneSociale, String partitaIva, String email, LocalDate dataInserimento, LocalDate dataUltimoContatto, double fatturatoAnnuale, String pec, String telefono, String logoAziendale, TipoAzienda tipo, String emailContatto, String nomeContatto, String cognomeContatto, String telefonoContatto) {
+    public Cliente(String ragioneSociale,
+                   String partitaIva,
+                   String email,
+                   LocalDate dataUltimoContatto,
+                   double fatturatoAnnuale,
+                   String pec,
+                   String telefono,
+                   String logoAziendale,
+                   TipoAzienda tipo,
+                   String emailContatto,
+                   String nomeContatto,
+                   String cognomeContatto,
+                   String telefonoContatto,
+                   Indirizzo sedeLegale,
+                   Indirizzo sedeOperativa
+    ) {
         this.ragioneSociale = ragioneSociale;
         this.partitaIva = partitaIva;
         this.email = email;
@@ -98,6 +113,8 @@ public class Cliente {
         this.nomeContatto = nomeContatto;
         this.cognomeContatto = cognomeContatto;
         this.telefonoContatto = telefonoContatto;
+        this.indirizzoSedeLegale = sedeLegale;
+        this.indirizzoSedeOperativa = sedeOperativa;
     }
 
     public String getRagioneSociale() {
@@ -111,7 +128,7 @@ public class Cliente {
     public long getId() {
         return id;
     }
-    
+
     public String getPartitaIva() {
         return partitaIva;
     }

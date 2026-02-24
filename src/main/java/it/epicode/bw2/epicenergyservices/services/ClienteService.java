@@ -1,7 +1,7 @@
 package it.epicode.bw2.epicenergyservices.services;
 
-import it.epicode.bw2.epicenergyservices.dto.response.ClienteDTO;
-import it.epicode.bw2.epicenergyservices.dto.response.UpdateContattoDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.ClienteDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
 import it.epicode.bw2.epicenergyservices.entities.Cliente;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
@@ -11,8 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
 
 @Service
 public class ClienteService {
@@ -43,6 +42,7 @@ public class ClienteService {
         cliente.setPec(payload.pec());
         cliente.setTelefono(payload.telefono());
         cliente.setTipo(payload.tipo());
+        cliente.setDataInserimento(LocalDate.now());
 
         cliente.setEmailContatto(payload.emailContatto());
         cliente.setNomeContatto(payload.nomeContatto());

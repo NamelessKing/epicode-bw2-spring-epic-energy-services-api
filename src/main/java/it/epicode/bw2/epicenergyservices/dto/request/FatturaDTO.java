@@ -1,4 +1,4 @@
-package it.epicode.bw2.epicenergyservices.dto.response;
+package it.epicode.bw2.epicenergyservices.dto.request;
 
 import jakarta.validation.constraints.*;
 
