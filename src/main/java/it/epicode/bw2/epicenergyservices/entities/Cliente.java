@@ -11,6 +11,7 @@ public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
     private String ragioneSociale;
     private String partitaIva;
     private String email;
@@ -20,6 +21,7 @@ public class Cliente {
     private String pec;
     private String telefono;
     private String logoAziendale;
+    @Enumerated(EnumType.STRING)
     private TipoAzienda tipo;
     private String emailContatto;
     private String nomeContatto;
