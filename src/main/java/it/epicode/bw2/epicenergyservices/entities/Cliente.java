@@ -3,7 +3,8 @@ package it.epicode.bw2.epicenergyservices.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
+
 
 import java.time.LocalDate;
 
@@ -35,7 +36,7 @@ public class Cliente {
     private LocalDate dataUltimoContatto;
 
     @Column(nullable = false)
-    @PositiveOrZero
+    @Positive(message = "Il fatturato annuale deve essere maggiore di zero")
     private double fatturatoAnnuale;
 
     @Column(nullable = false, unique = true)
@@ -81,13 +82,12 @@ public class Cliente {
     public Cliente() {
     }
 
-    ;
 
     public Cliente(String ragioneSociale, String partitaIva, String email, LocalDate dataInserimento, LocalDate dataUltimoContatto, double fatturatoAnnuale, String pec, String telefono, String logoAziendale, TipoAzienda tipo, String emailContatto, String nomeContatto, String cognomeContatto, String telefonoContatto) {
         this.ragioneSociale = ragioneSociale;
         this.partitaIva = partitaIva;
         this.email = email;
-        this.dataInserimento = dataInserimento;
+        this.dataInserimento = LocalDate.now();
         this.dataUltimoContatto = dataUltimoContatto;
         this.fatturatoAnnuale = fatturatoAnnuale;
         this.pec = pec;
