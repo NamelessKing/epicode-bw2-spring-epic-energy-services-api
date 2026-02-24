@@ -1,8 +1,6 @@
 package it.epicode.bw2.epicenergyservices.services;
 
 import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
-import it.epicode.bw2.epicenergyservices.entities.SedeCliente;
-import it.epicode.bw2.epicenergyservices.entities.TipoSede;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.SedeClienteRepository;

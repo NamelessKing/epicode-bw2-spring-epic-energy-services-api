@@ -1,6 +1,5 @@
 package it.epicode.bw2.epicenergyservices.dto.response;
 
-import it.epicode.bw2.epicenergyservices.entities.TipoSede;
 import jakarta.validation.constraints.NotNull;
 
 public record SedeCliente(long id,
