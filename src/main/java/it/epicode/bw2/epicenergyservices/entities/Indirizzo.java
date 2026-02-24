@@ -2,7 +2,6 @@ package it.epicode.bw2.epicenergyservices.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
 public class Indirizzo {
 
     @Id
