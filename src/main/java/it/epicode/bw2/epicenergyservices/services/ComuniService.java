@@ -8,7 +8,10 @@ import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.ComuneRepository;
 import it.epicode.bw2.epicenergyservices.repositories.ProvinciaRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,13 +55,14 @@ public class ComuniService {
         return convertToDTO(saved);
     }
 
-    public ComuneDTO findById(long comuneId) {
+    public Comune findById(long comuneId) {
 
         Comune comune = comuneRepository.findById(comuneId)
                 .orElseThrow(() ->
                         new NotFoundException("Comune con id " + comuneId + " non trovato"));
+        System.out.println("Cerco comune con id: " + comuneId);
 
-        return convertToDTO(comune);
+        return comune;
     }
 
     public ComuneDTO findByIdAndUpdate(long comuneId, ComuneDTO payload) {
