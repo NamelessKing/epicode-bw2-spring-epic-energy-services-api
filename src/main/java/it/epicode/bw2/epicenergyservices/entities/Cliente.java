@@ -69,14 +69,14 @@ public class Cliente {
     private String telefonoContatto;
 
     //relazione OneToOne con id_sede_legale
-//    @OneToOne
-//    @JoinColumn(name = "id_sede_legale")
-//    private Indirizzo indirizzo;
+    @OneToOne
+    @JoinColumn(name = "id_sede_legale", nullable = false)
+    private Indirizzo indirizzoSedeLegale;
 
     //relazione OneToOne con id_sede_operativa
-//    @OneToOne
-//    @JoinColumn(name = "id_sede_operativa")
-//    private Indirizzo indirizzo;
+    @OneToOne
+    @JoinColumn(name = "id_sede_operativa", nullable = false)
+    private Indirizzo indirizzoSedeOperativa;
 
     public Cliente() {
     }

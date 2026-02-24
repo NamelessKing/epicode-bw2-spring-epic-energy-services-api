@@ -2,6 +2,7 @@ package it.epicode.bw2.epicenergyservices.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -23,12 +24,15 @@ public class Provincia {
     private long id;
 
     @Column(nullable = false, unique = true, length = 2)
+    @NotBlank(message = "La sigla della provincia è obbligatoria. faccia di cazzo!")
     private String sigla;
 
     @Column(nullable = false)
+    @NotBlank(message = "La provincia è obbligatoria, brutto coglions")
     private String provincia;
 
     @Column(nullable = false)
+    @NotBlank(message = "La regione è obbligatorio. faccia di cazzo!")
     private String regione;
 
     @OneToMany(mappedBy = "provincia")
