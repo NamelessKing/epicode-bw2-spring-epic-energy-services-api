@@ -10,6 +10,7 @@ import it.epicode.bw2.epicenergyservices.repositories.UtentiRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UtentiService {
@@ -30,23 +31,39 @@ public class UtentiService {
     }
 
 
+    @Transactional
     public Utente addUtente(RegisterDTO payload, String ruolo) {
-        //verifico che email non esista già:
+        // 1 Verifica che email non esista già
         Utente found = this.utentiRepository.findByEmail(payload.email());
         if (found != null) throw new BadRequestException("Questa mail è già registrata");
 
-        //verifico che username sia unico:
+        // 2 Verifica che username sia unico
         boolean usernameExists = this.utentiRepository.existsByUsername(payload.username());
         if (usernameExists) throw new BadRequestException("L'username " + payload.username() + " è già in uso");
 
-        //creo
-        Utente newUser = new Utente(payload.username(), payload.email(), passwordEncoder.encode(payload.password()), payload.firstName(), payload.lastName());
+        // 3 Crea nuovo utente
+        Utente newUser = new Utente(
+                payload.username(),
+                payload.email(),
+                passwordEncoder.encode(payload.password()),
+                payload.firstName(),
+                payload.lastName());
+
+        // 4 Salva l'utente
         Utente utenteSalvato = this.utentiRepository.save(newUser);
-        //TODO: inserire set lista ruoli per mettere USER di default
-        Ruolo ruoloFromDB = this.ruoliRepository.findByRuolo(ruolo).orElseThrow(() -> new NotFoundException("Ruolo non trovato"));
+
+        // 5 Carica il ruolo dal DB
+        Ruolo ruoloFromDB = this.ruoliRepository.findByRuolo(ruolo)
+                .orElseThrow(() -> new NotFoundException("Ruolo '" + ruolo + "' non trovato nel database"));
+
+        // 6 Aggiungi il ruolo all'utente
         utenteSalvato.getRuoliList().add(ruoloFromDB);
-        utentiRepository.save(utenteSalvato);
-        //salvo
+
+        // 7 Salva l'utente con il ruolo assegnato
+        this.utentiRepository.save(utenteSalvato);
+        
+        System.out.println("Utente registrato: " + utenteSalvato.getUsername() + " con ruolo: " + ruolo);
+
         return utenteSalvato;
     }
 
@@ -58,18 +75,31 @@ public class UtentiService {
         return this.utentiRepository.findByEmail(email);
     }
 
+    /**
+     * Assegna un ruolo ad un utente (utile per modificare i ruoli dopo la registrazione)
+     */
+    @Transactional
     public Utente addRuoloUtente(Long idUtente, Long idRuolo) {
-        Utente utenteFound = this.utentiRepository.findById(idUtente).orElseThrow(() -> new NotFoundException("Utente non trovato"));
-        Ruolo ruoloFound = this.ruoliRepository.findById(idRuolo).orElseThrow(() -> new NotFoundException("Ruolo non trovato"));
+        Utente utenteFound = this.utentiRepository.findById(idUtente)
+                .orElseThrow(() -> new NotFoundException("Utente non trovato"));
+        
+        Ruolo ruoloFound = this.ruoliRepository.findById(idRuolo)
+                .orElseThrow(() -> new NotFoundException("Ruolo non trovato"));
+
+        // Controlla che l'utente non abbia già questo ruolo
+        boolean alreadyHasRole = utenteFound.getRuoliList().stream()
+                .anyMatch(r -> r.getId() == idRuolo);
+        
+        if (alreadyHasRole) {
+            throw new BadRequestException("Utente ha già questo ruolo");
+        }
 
         utenteFound.getRuoliList().add(ruoloFound);
 
         return this.utentiRepository.save(utenteFound);
-
     }
 
     public boolean existByEmail(String email) {
         return this.utentiRepository.existsByEmail(email);
     }
-
 }

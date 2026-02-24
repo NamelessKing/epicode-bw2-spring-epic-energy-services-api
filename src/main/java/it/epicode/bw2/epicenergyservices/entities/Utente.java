@@ -64,7 +64,7 @@ public class Utente implements UserDetails {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "utenti_ruoli", joinColumns = @JoinColumn(name = "id_utente"),
             inverseJoinColumns = @JoinColumn(name = "id_ruolo"))
     private List<Ruolo> ruoliList;
@@ -151,12 +151,23 @@ public class Utente implements UserDetails {
     // Metodi obbligatori di Spring Security
 
     /**
-     * Ritorna le authority (permessi) dell'utente basate sul ruolo
-     * Es: USER ha authority "USER", ADMIN ha authority "ADMIN"
+     * Ritorna le authority (permessi) dell'utente basate sui ruoli
+     * Es: USER -> ROLE_USER, ADMIN -> ROLE_ADMIN
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.ruoliList.stream().map(ruolo -> new SimpleGrantedAuthority(ruolo.getRuolo())).toList();
+        return this.ruoliList.stream()
+                .map(ruolo -> {
+                    String roleName = ruolo.getRuolo();
+                    if (roleName == null) {
+                        return null;
+                    }
+                    return roleName.startsWith("ROLE_")
+                            ? new SimpleGrantedAuthority(roleName)
+                            : new SimpleGrantedAuthority("ROLE_" + roleName);
+                })
+                .filter(java.util.Objects::nonNull)
+                .toList();
     }
 
 
@@ -189,4 +200,3 @@ public class Utente implements UserDetails {
         return true;
     }
 }
-
