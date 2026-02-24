@@ -32,7 +32,7 @@ public class UtentiController {
 
     @PatchMapping("/ruoli"
     )
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Utente addRuoloUtente(@RequestBody @Validated Long idUtente, Long idRuolo, BindingResult valRes) {
         if (valRes.hasErrors()) {
             List<String> errList = valRes.getFieldErrors()
