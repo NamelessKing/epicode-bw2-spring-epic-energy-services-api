@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class IndirizziService {
@@ -40,6 +42,10 @@ public class IndirizziService {
         Indirizzo found = this.findById(id);
         this.indirizziRepository.delete(found);
         log.info("indirizzo con ID: " + id + " eliminato");
+    }
+
+    public List<Indirizzo> findAll() {
+        return this.indirizziRepository.findAll();
     }
 
     public Indirizzo findByIdAndUpdate(long id, IndirizziDTO body) {
