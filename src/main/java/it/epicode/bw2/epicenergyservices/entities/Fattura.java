@@ -37,9 +37,9 @@ public class Fattura {
 
 
     //relazione ManyToOne con id_utente
-//    @ManyToOne
-//    @JoinColumn(name="id_utente", nullable=false)
-//    private Utente utente;
+    @ManyToOne
+    @JoinColumn(name = "id_utente", nullable = false)
+    private Utente utente;
 
     public Fattura() {
     }
@@ -97,5 +97,11 @@ public class Fattura {
         this.cliente = cliente;
     }
 
+    public Utente getUtente() {
+        return utente;
+    }
 
+    public void setUtente(Utente utente) {
+        this.utente = utente;
+    }
 }
