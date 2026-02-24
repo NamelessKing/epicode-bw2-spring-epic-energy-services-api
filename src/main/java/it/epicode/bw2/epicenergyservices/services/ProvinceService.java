@@ -88,7 +88,6 @@ public class ProvinceService {
 
     private ProvinciaDTO convertToDTO(Provincia provincia) {
         return new ProvinciaDTO(
-                provincia.getId(),
                 provincia.getSigla(),
                 provincia.getProvincia(),
                 provincia.getRegione()
