@@ -69,6 +69,10 @@ public class Utente implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "id_ruolo"))
     private List<Ruolo> ruoliList;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "utente")
+    private List<Fattura> fatture = new ArrayList<>();
+
     // ==================== COSTRUTTORI ====================
 
     public Utente() {
@@ -82,6 +86,7 @@ public class Utente implements UserDetails {
         this.lastName = lastName;
         this.avatarUrl = "https://picsum.photos/200";
         this.ruoliList = new ArrayList<>();
+        this.fatture = new ArrayList<>();
     }
 
     // ==================== GETTERS E SETTERS ====================
@@ -144,6 +149,14 @@ public class Utente implements UserDetails {
 
     public void setRuoliList(List<Ruolo> ruoliList) {
         this.ruoliList = ruoliList;
+    }
+
+    public List<Fattura> getFatture() {
+        return fatture;
+    }
+
+    public void setFatture(List<Fattura> fatture) {
+        this.fatture = fatture;
     }
 
 
