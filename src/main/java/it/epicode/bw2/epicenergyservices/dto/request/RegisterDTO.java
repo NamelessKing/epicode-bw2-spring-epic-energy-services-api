@@ -39,7 +39,6 @@ public record RegisterDTO(
         @Size(min = 6, message = "Password deve essere almeno 6 caratteri")
         String password,
         String firstName,
-        String lastName,
-        String avatarUrl
+        String lastName
 ) {
 }

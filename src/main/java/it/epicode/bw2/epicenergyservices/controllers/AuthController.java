@@ -104,11 +104,11 @@ public class AuthController {
                     .stream()
                     .map(error -> error.getDefaultMessage())
                     .collect(Collectors.toList());
-            throw new ValidationException("Errori di validazione", errors);
+            throw new ValidationException(errors);
         }
 
         // Se validazione OK, registra l'utente
-        Utente saved = this.utentiService.addUtente(payload);
+        Utente saved = this.utentiService.addUtente(payload, "USER");
         return saved;
     }
 }
