@@ -36,11 +36,11 @@ public class Fattura {
 
     ;
 
-    public Fattura(LocalDate data, double importo, long numero, StatoFattura stato) {
+    public Fattura(LocalDate data, double importo, long numero, StatoFattura statoFattura) {
         this.data = data;
         this.importo = importo;
         this.numero = numero;
-        this.statoFattura = stato;
+        this.statoFattura = statoFattura;
     }
 
     public long getId() {
@@ -73,11 +73,11 @@ public class Fattura {
     }
 
     public StatoFattura getStato() {
-        return stato;
+        return statoFattura;
     }
 
-    public void setStato(StatoFattura stato) {
-        this.stato = stato;
+    public void setStato(StatoFattura statoFattura) {
+        this.statoFattura = statoFattura;
     }
 
     public Cliente getCliente() {
@@ -88,11 +88,5 @@ public class Fattura {
         this.cliente = cliente;
     }
 
-    public List<StatoFattura> getStatoFattura() {
-        return statoFattura;
-    }
 
-    public void setStatoFattura(List<StatoFattura> statoFattura) {
-        this.statoFattura = statoFattura;
-    }
 }
