@@ -1,7 +1,7 @@
 package it.epicode.bw2.epicenergyservices.services;
 
 import it.epicode.bw2.epicenergyservices.dto.request.LoginDTO;
-import it.epicode.bw2.epicenergyservices.entities.User;
+import it.epicode.bw2.epicenergyservices.entities.Utente;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.exceptions.UnauthorizedException;
 import it.epicode.bw2.epicenergyservices.security.JWTTools;
@@ -17,20 +17,20 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AuthService {
-    
-    private final UsersService usersService;
+
+    private final UtentiService utentiService;
     private final JWTTools jwtTools;
     private final PasswordEncoder passwordEncoder;
-    
+
+
     @Autowired
-    public AuthService(UsersService usersService, 
-                      JWTTools jwtTools, 
-                      PasswordEncoder passwordEncoder) {
-        this.usersService = usersService;
+    public AuthService(UtentiService usersService, JWTTools jwtTools, PasswordEncoder passwordEncoder) {
+        this.utentiService = usersService;
         this.jwtTools = jwtTools;
         this.passwordEncoder = passwordEncoder;
     }
-    
+
+
     /**
      * Autentica un utente e genera JWT token
      * 1. Cerca utente per email nel database
@@ -38,13 +38,13 @@ public class AuthService {
      * 3. Se credenziali valide → genera JWT token
      * 4. Se credenziali errate → lancia UnauthorizedException
      *
-     * @throws NotFoundException se l'email non esiste
+     * @throws NotFoundException     se l'email non esiste
      * @throws UnauthorizedException se la password è sbagliata
      */
     public String checkCredentialsAndGenerateToken(LoginDTO payload) {
         // 1. Cerca user per email
-        User found = usersService.findByEmail(payload.email());
-        
+        Utente found = utentiService.findByEmail(payload.email());
+
         // 2. Verifica password con BCrypt
         // passwordEncoder.matches() confronta la password in chiaro con l'hash
         if (passwordEncoder.matches(payload.password(), found.getPasswordHash())) {

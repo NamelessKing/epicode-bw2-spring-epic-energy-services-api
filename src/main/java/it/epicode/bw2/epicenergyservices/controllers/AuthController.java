@@ -11,11 +11,10 @@ import it.epicode.bw2.epicenergyservices.dto.request.RegisterDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsWithListDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.LoginResponseDTO;
-import it.epicode.bw2.epicenergyservices.dto.response.UserResponseDTO;
-import it.epicode.bw2.epicenergyservices.entities.User;
+import it.epicode.bw2.epicenergyservices.entities.Utente;
 import it.epicode.bw2.epicenergyservices.exceptions.ValidationException;
 import it.epicode.bw2.epicenergyservices.services.AuthService;
-import it.epicode.bw2.epicenergyservices.services.UsersService;
+import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,51 +24,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Controller per la gestione dell'autenticazione
- * <p>
- * Endpoints:
- * - POST /auth/login - Login utente (genera JWT token)
- * - POST /auth/register - Registrazione nuovo utente
- * <p>
- * Nessuno di questi endpoint richiede autenticazione (sono pubblici)
- */
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Authentication", description = "Endpoints per autenticazione e registrazione")
 public class AuthController {
 
     private final AuthService authService;
-    private final UsersService usersService;
+    private final UtentiService utentiService;
 
     @Autowired
-    public AuthController(AuthService authService, UsersService usersService) {
+    public AuthController(AuthService authService, UtentiService usersService) {
         this.authService = authService;
-        this.usersService = usersService;
+        this.utentiService = usersService;
     }
 
-    /**
-     * Endpoint di login
-     * Autentica un utente e ritorna JWT token
-     *
-     * @param payload LoginDTO con email e password
-     * @return LoginResponseDTO con accessToken (JWT)
-     * <p>
-     * Esempio request:
-     * POST /auth/login
-     * {
-     * "email": "admin@epicenergy.it",
-     * "password": "admin123"
-     * }
-     * <p>
-     * Esempio response (200 OK):
-     * {
-     * "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-     * }
-     * <p>
-     * Client deve aggiungere il token negli header successivi:
-     * Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-     */
     @PostMapping("/login")
     @Operation(
             summary = "Login utente",
@@ -102,44 +70,7 @@ public class AuthController {
         return new LoginResponseDTO(token);
     }
 
-    /**
-     * Endpoint di registrazione
-     * Registra un nuovo utente nel sistema
-     *
-     * @param payload          RegisterDTO con dati di registrazione
-     * @param validationResult risultato della validazione Bean Validation
-     * @return User appena registrato (senza password!)
-     * <p>
-     * Esempio request:
-     * POST /auth/register
-     * {
-     * "username": "mario_rossi",
-     * "email": "mario@epicenergy.it",
-     * "password": "securePass123",
-     * "role": "USER",
-     * "firstName": "Mario",
-     * "lastName": "Rossi",
-     * "avatarUrl": "https://api.example.com/avatars/mario.jpg"
-     * }
-     * <p>
-     * Esempio response (201 CREATED):
-     * {
-     * "id": 2,
-     * "username": "mario_rossi",
-     * "email": "mario@epicenergy.it",
-     * "firstName": "Mario",
-     * "lastName": "Rossi",
-     * "role": "USER",
-     * "avatarUrl": "https://api.example.com/avatars/mario.jpg"
-     * }
-     * <p>
-     * Validazioni:
-     * - username: obbligatorio, 3-50 caratteri
-     * - email: obbligatoria, formato valido, non già in uso
-     * - password: obbligatoria, almeno 6 caratteri
-     * - role: obbligatorio, USER o ADMIN
-     * - firstName, lastName, avatarUrl: opzionali
-     */
+
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
@@ -150,7 +81,7 @@ public class AuthController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Utente registrato con successo",
-                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
+                    content = @Content(schema = @Schema(implementation = Utente.class))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -163,28 +94,21 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ErrorsWithListDTO.class))
             )
     })
-    public UserResponseDTO register(@RequestBody @Valid RegisterDTO payload,
-                                    BindingResult validationResult) {
 
+
+    public Utente register(@RequestBody @Valid RegisterDTO payload,
+                           BindingResult validationResult) {
         // Gestisci errori di validazione
         if (validationResult.hasErrors()) {
             List<String> errors = validationResult.getFieldErrors()
                     .stream()
                     .map(error -> error.getDefaultMessage())
                     .collect(Collectors.toList());
-            throw new ValidationException("Errori di validazione", errors);
+            throw new ValidationException(errors);
         }
 
         // Se validazione OK, registra l'utente
-        User saved = usersService.save(payload);
-        return new UserResponseDTO(
-                saved.getId(),
-                saved.getUsername(),
-                saved.getEmail(),
-                saved.getFirstName(),
-                saved.getLastName(),
-                saved.getAvatarUrl(),
-                saved.getRole()
-        );
+        Utente saved = this.utentiService.addUtente(payload, "USER");
+        return saved;
     }
 }
