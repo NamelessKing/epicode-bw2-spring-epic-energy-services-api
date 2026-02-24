@@ -3,6 +3,7 @@ package it.epicode.bw2.epicenergyservices.entities;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "fattura")
@@ -14,12 +15,16 @@ public class Fattura {
     private double importo;
     private long numero;//secondo me può essere l'id
 
-    //relazione ManyToOne con stato fattura
+    //Relazione ManyToOne con id_cliente
+    @ManyToOne
+    @JoinColumn(name = "id_cliente")
+    private Cliente cliente;
+
+    //relazione ManyToOne con id_stato_fattura
     @ManyToOne
     @JoinColumn(name = "id_stato_fattura")
-    private StatoFattura stato;
+    private StatoFattura statoFattura;
 
-    //Relazione OneToMany con id_cliente
 
     //relazione ManyToOne con id_utente
 //    @ManyToOne
@@ -35,7 +40,7 @@ public class Fattura {
         this.data = data;
         this.importo = importo;
         this.numero = numero;
-        this.stato = stato;
+        this.statoFattura = stato;
     }
 
     public long getId() {
@@ -73,5 +78,21 @@ public class Fattura {
 
     public void setStato(StatoFattura stato) {
         this.stato = stato;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public List<StatoFattura> getStatoFattura() {
+        return statoFattura;
+    }
+
+    public void setStatoFattura(List<StatoFattura> statoFattura) {
+        this.statoFattura = statoFattura;
     }
 }

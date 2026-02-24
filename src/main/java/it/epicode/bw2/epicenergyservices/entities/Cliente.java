@@ -21,27 +21,27 @@ public class Cliente {
     private String telefono;
     private String logoAziendale;
     private TipoAzienda tipo;
+    private String emailContatto;
+    private String nomeContatto;
+    private String cognomeContatto;
+    private String telefonoContatto;
 
-    //relazione OneToMany con contatto
+    //relazione OneToOne con id_sede_legale
+//    @OneToOne
+//    @JoinColumn(name = "id_sede_legale")
+//    private Indirizzo indirizzo;
 
-    //relazione OneToMany con sede cliente
+    //relazione OneToOne con id_sede_operativa
+//    @OneToOne
+//    @JoinColumn(name = "id_sede_operativa")
+//    private Indirizzo indirizzo;
 
     public Cliente() {
     }
 
     ;
 
-    public Cliente(String ragioneSociale,
-                   String partitaIva,
-                   String email,
-                   LocalDate dataInserimento,
-                   LocalDate dataUltimoContatto,
-                   double fatturatoAnnuale,
-                   String pec,
-                   String telefono,
-                   String logoAziendale,
-                   TipoAzienda tipo) {
-
+    public Cliente(String ragioneSociale, String partitaIva, String email, LocalDate dataInserimento, LocalDate dataUltimoContatto, double fatturatoAnnuale, String pec, String telefono, String logoAziendale, TipoAzienda tipo, String emailContatto, String nomeContatto, String cognomeContatto, String telefonoContatto) {
         this.ragioneSociale = ragioneSociale;
         this.partitaIva = partitaIva;
         this.email = email;
@@ -52,6 +52,10 @@ public class Cliente {
         this.telefono = telefono;
         this.logoAziendale = logoAziendale;
         this.tipo = tipo;
+        this.emailContatto = emailContatto;
+        this.nomeContatto = nomeContatto;
+        this.cognomeContatto = cognomeContatto;
+        this.telefonoContatto = telefonoContatto;
     }
 
     public String getRagioneSociale() {
@@ -137,5 +141,37 @@ public class Cliente {
 
     public void setTipo(TipoAzienda tipo) {
         this.tipo = tipo;
+    }
+
+    public String getEmailContatto() {
+        return emailContatto;
+    }
+
+    public void setEmailContatto(String emailContatto) {
+        this.emailContatto = emailContatto;
+    }
+
+    public String getNomeContatto() {
+        return nomeContatto;
+    }
+
+    public void setNomeContatto(String nomeContatto) {
+        this.nomeContatto = nomeContatto;
+    }
+
+    public String getCognomeContatto() {
+        return cognomeContatto;
+    }
+
+    public void setCognomeContatto(String cognomeContatto) {
+        this.cognomeContatto = cognomeContatto;
+    }
+
+    public String getTelefonoContatto() {
+        return telefonoContatto;
+    }
+
+    public void setTelefonoContatto(String telefonoContatto) {
+        this.telefonoContatto = telefonoContatto;
     }
 }
