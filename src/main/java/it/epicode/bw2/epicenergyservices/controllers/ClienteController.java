@@ -1,5 +1,6 @@
 package it.epicode.bw2.epicenergyservices.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import it.epicode.bw2.epicenergyservices.dto.request.ClienteDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteResponseDTO;
@@ -8,12 +9,14 @@ import it.epicode.bw2.epicenergyservices.services.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/clienti")
+@SecurityRequirement(name = "Bearer Authentication")
 public class ClienteController {
     private final ClienteService clienteService;
 
@@ -23,8 +26,9 @@ public class ClienteController {
     }
 
     //CREATE
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{idComune}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ClienteResponseDTO saveCliente(@RequestBody @Validated ClienteDTO payload, @PathVariable Long idComune) {
 
         return this.clienteService.save(payload, idComune);

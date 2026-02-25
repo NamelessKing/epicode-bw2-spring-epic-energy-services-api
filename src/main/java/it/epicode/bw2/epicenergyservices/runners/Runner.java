@@ -6,6 +6,7 @@ import it.epicode.bw2.epicenergyservices.dto.request.StatoFatturaDTO;
 import it.epicode.bw2.epicenergyservices.entities.Ruolo;
 import it.epicode.bw2.epicenergyservices.entities.StatoFattura;
 import it.epicode.bw2.epicenergyservices.entities.Utente;
+import it.epicode.bw2.epicenergyservices.services.ImportAnagraficheService;
 import it.epicode.bw2.epicenergyservices.services.FatturaService;
 import it.epicode.bw2.epicenergyservices.services.RuoliService;
 import it.epicode.bw2.epicenergyservices.services.StatoFatturaService;
@@ -13,14 +14,16 @@ import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
+ * - Importa Province/Comuni da CSV (se abilitato via app.import.enabled)
  * - Crea i ruoli di default (USER, ADMIN, MANAGER, TECHNICIAN) se non esistono
  * - Crea un utente admin di test se non esiste
- *
  */
 @Component
+@Order(1)
 public class Runner implements CommandLineRunner {
 
     private final RuoliService ruoliService;
@@ -48,37 +51,33 @@ public class Runner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("Inizio seeding dei dati...");
-
+        
         // Crea ruolo USER
-        boolean ruoloUserExistInBd = this.ruoliService.existsByRuolo("USER");
-        if (!ruoloUserExistInBd) {
+        if (!this.ruoliService.existsByRuolo("USER")) {
             Ruolo ruoloUser = this.ruoliService.addRuolo(new RuoliDTO("USER"));
-            System.out.println("Ruolo creato: " + ruoloUser.toString());
+            System.out.println("Ruolo creato: " + ruoloUser);
         }
 
         // Crea ruolo ADMIN
-        boolean ruoloAdminExistInBd = this.ruoliService.existsByRuolo("ADMIN");
-        if (!ruoloAdminExistInBd) {
+        if (!this.ruoliService.existsByRuolo("ADMIN")) {
             Ruolo ruoloAdmin = this.ruoliService.addRuolo(new RuoliDTO("ADMIN"));
-            System.out.println("Ruolo creato: " + ruoloAdmin.toString());
+            System.out.println("Ruolo creato: " + ruoloAdmin);
         }
 
         // Crea ruolo MANAGER
-        boolean ruoloManagerExistInBd = this.ruoliService.existsByRuolo("MANAGER");
-        if (!ruoloManagerExistInBd) {
+        if (!this.ruoliService.existsByRuolo("MANAGER")) {
             Ruolo ruoloManager = this.ruoliService.addRuolo(new RuoliDTO("MANAGER"));
-            System.out.println("Ruolo creato: " + ruoloManager.toString());
+            System.out.println("Ruolo creato: " + ruoloManager);
         }
 
-        //  Crea ruolo TECHNICIAN
-        boolean ruoloTechnicianExistInBd = this.ruoliService.existsByRuolo("TECHNICIAN");
-        if (!ruoloTechnicianExistInBd) {
+        // Crea ruolo TECHNICIAN
+        if (!this.ruoliService.existsByRuolo("TECHNICIAN")) {
             Ruolo ruoloTechnician = this.ruoliService.addRuolo(new RuoliDTO("TECHNICIAN"));
-            System.out.println("Ruolo creato: " + ruoloTechnician.toString());
+            System.out.println("Ruolo creato: " + ruoloTechnician);
         }
 
         // Crea utente admin di default
-        boolean utenteAdminExistFromDB = this.utentiService.existByEmail("betta@pcq.it");
+        boolean utenteAdminExistFromDB = this.utentiService.existByEmail(adminEmail);
         if (!utenteAdminExistFromDB) {
             RegisterDTO admin = new RegisterDTO(adminUsername, adminEmail, adminPwd, adminName, adminLastName);
             Utente utenteAdmin = this.utentiService.addUtente(admin, "ADMIN");

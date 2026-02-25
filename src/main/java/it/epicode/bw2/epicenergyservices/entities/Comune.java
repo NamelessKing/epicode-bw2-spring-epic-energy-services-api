@@ -1,6 +1,7 @@
 package it.epicode.bw2.epicenergyservices.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -19,7 +20,7 @@ public class Comune {
     private long id;
 
     @Column(name = "progressivo_del_comune", nullable = false)
-    @NotBlank(message = "Il progressivo comune è obbligatorio")
+    @Min(value = 1, message = "Il progressivo comune deve essere >= 1")
     private int progressivoDelComune;
 
     @Column(name = "nome_comune", nullable = false)
