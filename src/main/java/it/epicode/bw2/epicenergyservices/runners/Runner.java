@@ -10,6 +10,7 @@ import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,36 +19,22 @@ import org.springframework.stereotype.Component;
  * - Crea un utente admin di test se non esiste
  */
 @Component
+@Order(1)
 public class Runner implements CommandLineRunner {
 
     private final RuoliService ruoliService;
     private final UtentiService utentiService;
-    private final ImportAnagraficheService importAnagraficheService;
 
-    @Value("${app.import.enabled:false}")
-    private boolean importEnabled;
 
     @Autowired
     public Runner(RuoliService ruoliService,
-                  UtentiService utentiService,
-                  ImportAnagraficheService importAnagraficheService) {
+                  UtentiService utentiService) {
         this.ruoliService = ruoliService;
         this.utentiService = utentiService;
-        this.importAnagraficheService = importAnagraficheService;
     }
 
     @Override
     public void run(String... args) {
-        System.out.println("Inizio seeding dei dati...");
-
-        // Import Province/Comuni da CSV (manuale tramite flag)
-        if (importEnabled) {
-            System.out.println(">>> Import CSV abilitato (app.import.enabled=true)");
-            importAnagraficheService.importaTutto();
-            System.out.println(">>> Import CSV completato");
-        } else {
-            System.out.println(">>> Import CSV disabilitato (app.import.enabled=false)");
-        }
 
         // Crea ruolo USER
         if (!this.ruoliService.existsByRuolo("USER")) {
@@ -80,6 +67,6 @@ public class Runner implements CommandLineRunner {
             System.out.println("Utente admin creato: " + utenteAdmin.getUsername());
         }
 
-        System.out.println("Seeding completato!");
+        //System.out.println("Seeding completato!");
     }
 }
