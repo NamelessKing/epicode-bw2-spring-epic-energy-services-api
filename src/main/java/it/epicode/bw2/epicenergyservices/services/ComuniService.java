@@ -85,11 +85,9 @@ public class ComuniService {
 
     public Comune findById(long comuneId) {
 
-        Comune comune = comuneRepository.findById(comuneId)
+        return comuneRepository.findById(comuneId)
                 .orElseThrow(() ->
                         new NotFoundException("Comune con id " + comuneId + " non trovato"));
-
-        return comune;
     }
 
     public ComuneResponseDTO findByIdAndUpdate(long comuneId, ComuneRequestDTO payload) {

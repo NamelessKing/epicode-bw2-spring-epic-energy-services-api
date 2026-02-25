@@ -14,4 +14,5 @@ public record ProvinciaDTO(
 
         @NotBlank(message = "La regione è obbligatoria")
         String regione
-) {}
+) {
+}

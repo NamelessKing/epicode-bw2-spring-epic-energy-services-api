@@ -1,33 +1,54 @@
 package it.epicode.bw2.epicenergyservices.services;
 
+import it.epicode.bw2.epicenergyservices.dto.request.IndirizzoRequestDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateIndirizziDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.IndirizziDTO;
+import it.epicode.bw2.epicenergyservices.dto.response.IndirizzoResponseDTO;
 import it.epicode.bw2.epicenergyservices.entities.Comune;
 import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
+import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.ComuneRepository;
 import it.epicode.bw2.epicenergyservices.repositories.IndirizziRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class IndirizziService {
 
-    private final ComuneRepository comuneRepository;
+    private static final List<String> VALID_SORT_FIELDS = Arrays.asList("id", "via", "localita", "cap");
     private final IndirizziRepository indirizziRepository;
     private final ComuniService comuniService;
 
 
-    @Autowired
-    public IndirizziService(ComuneRepository comuneRepository, IndirizziRepository indirizziRepository, ComuniService comuniService) {
-        this.indirizziRepository = indirizziRepository;
-        this.comuneRepository = comuneRepository;
 
+    @Autowired
+    public IndirizziService(ComuniService comuniService, IndirizziRepository indirizziRepository) {
+        this.indirizziRepository = indirizziRepository;
         this.comuniService = comuniService;
+    }
+
+        public Page<IndirizzoResponseDTO> findAll(int page, int size, String orderBy) {
+
+        if (size > 200 || size <= 0) size = 10;
+        if (page < 0) page = 0;
+        if (!VALID_SORT_FIELDS.contains(orderBy)) orderBy = "via";
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+
+        return indirizziRepository.findAll(pageable)
+                .map(this::convertToResponseDTO);
     }
 
     public Indirizzo save(IndirizziDTO payload, Long comuneId) {
@@ -51,14 +72,42 @@ public class IndirizziService {
 
 
     public Indirizzo findById(long id) {
-        return this.indirizziRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("indirizzo con Id: " + id + " non trovato"));
+
+        return indirizziRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Indirizzo con id " + id + " non trovato"));
+    }
+
+    public IndirizzoResponseDTO findByIdAndUpdate(long id, IndirizzoRequestDTO payload) {
+
+        Indirizzo found = indirizziRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Indirizzo con id " + id + " non trovato"));
+
+        Comune comune = comuniService.findById(payload.comuneId());
+
+        found.setVia(payload.via());
+        found.setCivico(payload.civico());
+        found.setLocalita(payload.localita());
+        found.setCap(payload.cap());
+        found.setComune(comune);
+
+        Indirizzo updated = indirizziRepository.save(found);
+
+        log.info("Indirizzo aggiornato ID={}", updated.getId());
+
+        return convertToResponseDTO(updated);
     }
 
     public void findByIdAndDelete(long id) {
-        Indirizzo found = this.findById(id);
-        this.indirizziRepository.delete(found);
-        log.info("indirizzo con ID: " + id + " eliminato");
+
+        Indirizzo found = indirizziRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Indirizzo con id " + id + " non trovato"));
+
+        indirizziRepository.delete(found);
+
+        log.warn("Indirizzo eliminato ID={}", id);
     }
 
     public List<Indirizzo> findAll() {
@@ -71,9 +120,31 @@ public class IndirizziService {
         found.setCivico(String.valueOf(body.civico()));
         found.setLocalita(body.localita());
         found.setCap(String.valueOf(body.cap()));
-        Comune comune = comuneRepository.findById(body.comuneId()).orElseThrow(() -> new NotFoundException("comune non trovato"));
+        Comune comune = comuniService.findById(body.comuneId());
         found.setComune(comune);
         return this.indirizziRepository.save(found);
+    }
+
+    public IndirizzoResponseDTO convertToResponseDTO(Indirizzo indirizzo) {
+
+        if (indirizzo == null) {
+            throw new IllegalStateException("Indirizzo null non convertibile");
+        }
+
+        IndirizzoResponseDTO.ComuneEmbeddedDTO comuneDTO =
+                new IndirizzoResponseDTO.ComuneEmbeddedDTO(
+                        indirizzo.getComune().getId(),
+                        indirizzo.getComune().getNomeComune()
+                );
+
+        return new IndirizzoResponseDTO(
+                indirizzo.getId(),
+                indirizzo.getVia(),
+                indirizzo.getCivico(),
+                indirizzo.getLocalita(),
+                indirizzo.getCap(),
+                comuneDTO
+        );
     }
 
 }
