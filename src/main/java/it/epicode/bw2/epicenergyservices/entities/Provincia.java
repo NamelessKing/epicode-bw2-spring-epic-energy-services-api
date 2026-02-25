@@ -24,15 +24,15 @@ public class Provincia {
     private long id;
 
     @Column(nullable = false, unique = true, length = 2)
-    @NotBlank(message = "La sigla della provincia è obbligatoria. faccia di cazzo!")
+    @NotBlank(message = "La sigla della provincia è obbligatoria")
     private String sigla;
 
     @Column(nullable = false)
-    @NotBlank(message = "La provincia è obbligatoria, brutto coglions")
+    @NotBlank(message = "La provincia è obbligatoria")
     private String provincia;
 
     @Column(nullable = false)
-    @NotBlank(message = "La regione è obbligatorio. faccia di cazzo!")
+    @NotBlank(message = "La regione è obbligatoria")
     private String regione;
 
     @OneToMany(mappedBy = "provincia")
