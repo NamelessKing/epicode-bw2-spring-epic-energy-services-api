@@ -7,6 +7,7 @@ import it.epicode.bw2.epicenergyservices.entities.Utente;
 import it.epicode.bw2.epicenergyservices.services.RuoliService;
 import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,17 @@ public class Runner implements CommandLineRunner {
     private final RuoliService ruoliService;
     private final UtentiService utentiService;
 
+    @Value("${admin.username}")
+    private String adminUsername;
+    @Value("${admin.name}")
+    private String adminName;
+    @Value("${admin.lastname}")
+    private String adminLastName;
+    @Value("${admin.email}")
+    private String adminEmail;
+    @Value("${admin.pwd}")
+    private String adminPwd;
+
     @Autowired
     public Runner(RuoliService ruoliService, UtentiService utentiService) {
         this.ruoliService = ruoliService;
@@ -30,7 +42,7 @@ public class Runner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("Inizio seeding dei dati...");
-        
+
         // Crea ruolo USER
         boolean ruoloUserExistInBd = this.ruoliService.existsByRuolo("USER");
         if (!ruoloUserExistInBd) {
@@ -62,7 +74,7 @@ public class Runner implements CommandLineRunner {
         // Crea utente admin di default
         boolean utenteAdminExistFromDB = this.utentiService.existByEmail("betta@pcq.it");
         if (!utenteAdminExistFromDB) {
-            RegisterDTO admin = new RegisterDTO("bettapcq", "betta@pcq.it", "bbEli8!123", "betta", "pcq");
+            RegisterDTO admin = new RegisterDTO(adminUsername, adminEmail, adminPwd, adminName, adminLastName);
             Utente utenteAdmin = this.utentiService.addUtente(admin, "ADMIN");
             System.out.println("Utente admin creato: " + utenteAdmin.getUsername());
         }
