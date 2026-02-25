@@ -3,7 +3,8 @@ package it.epicode.bw2.epicenergyservices.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
+
 
 import java.time.LocalDate;
 
@@ -14,6 +15,9 @@ public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(name = "status_cliente")
+    private boolean stato = true;
 
     @Column(nullable = false)
     @NotBlank(message = "Ragione sociale obbligatoria")
@@ -35,7 +39,7 @@ public class Cliente {
     private LocalDate dataUltimoContatto;
 
     @Column(nullable = false)
-    @PositiveOrZero
+    @Positive(message = "Il fatturato annuale deve essere maggiore di zero")
     private double fatturatoAnnuale;
 
     @Column(nullable = false, unique = true)
@@ -75,30 +79,73 @@ public class Cliente {
 
     //relazione OneToOne con id_sede_operativa
     @OneToOne
-    @JoinColumn(name = "id_sede_operativa", nullable = false)
+    @JoinColumn(name = "id_sede_operativa")
     private Indirizzo indirizzoSedeOperativa;
 
     public Cliente() {
     }
 
-    ;
 
-    public Cliente(String ragioneSociale, String partitaIva, String email, LocalDate dataInserimento, LocalDate dataUltimoContatto, double fatturatoAnnuale, String pec, String telefono, String logoAziendale, TipoAzienda tipo, String emailContatto, String nomeContatto, String cognomeContatto, String telefonoContatto) {
+    public Cliente(String ragioneSociale,
+                   String partitaIva,
+                   String email,
+                   double fatturatoAnnuale,
+                   String pec,
+                   String telefono,
+                   TipoAzienda tipo,
+                   String emailContatto,
+                   String nomeContatto,
+                   String cognomeContatto,
+                   String telefonoContatto,
+                   Indirizzo sedeLegale
+    ) {
         this.ragioneSociale = ragioneSociale;
         this.partitaIva = partitaIva;
         this.email = email;
-        this.dataInserimento = dataInserimento;
-        this.dataUltimoContatto = dataUltimoContatto;
+        this.dataInserimento = LocalDate.now();
+        this.dataUltimoContatto = LocalDate.now();
         this.fatturatoAnnuale = fatturatoAnnuale;
         this.pec = pec;
         this.telefono = telefono;
-        this.logoAziendale = logoAziendale;
+        this.logoAziendale = "https://placebear.com/200/200";
         this.tipo = tipo;
         this.emailContatto = emailContatto;
         this.nomeContatto = nomeContatto;
         this.cognomeContatto = cognomeContatto;
         this.telefonoContatto = telefonoContatto;
+        this.indirizzoSedeLegale = sedeLegale;
+
     }
+
+
+//    public Cliente(
+//            String ragioneSociale,
+//            String partitaIva,
+//            String email,
+//            double fatturatoAnnuale,
+//            String pec,
+//            String telefono,
+//            TipoAzienda tipo,
+//            LocalDate dataInserimento,
+//            String emailContatto,
+//            String nomeContatto,
+//            String cognomeContatto,
+//            String telefonoContatto
+//    ) {
+//        this.ragioneSociale = ragioneSociale;
+//        this.partitaIva = partitaIva;
+//        this.email = email;
+//        this.fatturatoAnnuale = fatturatoAnnuale;
+//        this.pec = pec;
+//        this.telefono = telefono;
+//        this.tipo = tipo;
+//        this.dataInserimento = dataInserimento;
+//        this.emailContatto = emailContatto;
+//        this.nomeContatto = nomeContatto;
+//        this.cognomeContatto = cognomeContatto;
+//        this.telefonoContatto = telefonoContatto;
+//    }
+
 
     public String getRagioneSociale() {
         return ragioneSociale;
@@ -111,7 +158,7 @@ public class Cliente {
     public long getId() {
         return id;
     }
-    
+
     public String getPartitaIva() {
         return partitaIva;
     }
@@ -214,5 +261,29 @@ public class Cliente {
 
     public void setTelefonoContatto(String telefonoContatto) {
         this.telefonoContatto = telefonoContatto;
+    }
+
+    public Indirizzo getIndirizzoSedeLegale() {
+        return indirizzoSedeLegale;
+    }
+
+    public void setIndirizzoSedeLegale(Indirizzo indirizzoSedeLegale) {
+        this.indirizzoSedeLegale = indirizzoSedeLegale;
+    }
+
+    public Indirizzo getIndirizzoSedeOperativa() {
+        return indirizzoSedeOperativa;
+    }
+
+    public void setIndirizzoSedeOperativa(Indirizzo indirizzoSedeOperativa) {
+        this.indirizzoSedeOperativa = indirizzoSedeOperativa;
+    }
+
+    public boolean isAttivo() {
+        return stato;
+    }
+
+    public void setStato(boolean stato) {
+        this.stato = stato;
     }
 }

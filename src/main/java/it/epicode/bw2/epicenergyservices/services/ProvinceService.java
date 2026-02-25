@@ -26,10 +26,10 @@ public class ProvinceService {
 
     private final ProvinciaRepository provinciaRepository;
     private final ComuneRepository comuneRepository;
-    
+
     // Campi validi per ordinamento
     private static final List<String> VALID_SORT_FIELDS = Arrays.asList(
-        "id", "sigla", "provincia", "regione"
+            "id", "sigla", "provincia", "regione"
     );
 
     public Page<ProvinciaResponseDTO> findAll(int page, int size, String orderBy) {
@@ -39,18 +39,18 @@ public class ProvinceService {
             log.warn("Size non valido ({}), impostato a default: 10", size);
             size = 10;
         }
-        
+
         // Validazione page
         if (page < 0) {
             log.warn("Page non valido ({}), impostato a default: 0", page);
             page = 0;
         }
-        
+
         // Validazione orderBy - previene SQL injection e errori
         if (orderBy == null || orderBy.isBlank() || !VALID_SORT_FIELDS.contains(orderBy)) {
             if (orderBy != null && !orderBy.isBlank()) {
-                log.warn("Campo ordinamento '{}' non valido. Campi validi: {}. Uso default 'provincia'", 
-                         orderBy, VALID_SORT_FIELDS);
+                log.warn("Campo ordinamento '{}' non valido. Campi validi: {}. Uso default 'provincia'",
+                        orderBy, VALID_SORT_FIELDS);
             }
             orderBy = "provincia";
         }
@@ -85,7 +85,7 @@ public class ProvinceService {
         return convertToResponseDTO(saved);
     }
 
-    public ProvinciaResponseDTO findById(long provinciaId) {
+    public Provincia findById(long provinciaId) {
 
         log.debug("Ricerca provincia con ID: {}", provinciaId);
 
@@ -95,7 +95,7 @@ public class ProvinceService {
                     return new NotFoundException("Provincia con id " + provinciaId + " non trovata");
                 });
 
-        return convertToResponseDTO(provincia);
+        return provincia;
     }
 
     public ProvinciaResponseDTO findByIdAndUpdate(long provinciaId, ProvinciaRequestDTO payload) {
@@ -140,12 +140,12 @@ public class ProvinceService {
         // Verifica integrità referenziale: controlla se ci sono comuni associati
         long comuniCount = comuneRepository.countByProvinciaId(provinciaId);
         if (comuniCount > 0) {
-            log.error("Impossibile eliminare provincia ID {} ({}): ha {} comuni associati", 
-                      provinciaId, found.getSigla(), comuniCount);
+            log.error("Impossibile eliminare provincia ID {} ({}): ha {} comuni associati",
+                    provinciaId, found.getSigla(), comuniCount);
             throw new ConflictException(
-                String.format("Impossibile eliminare la provincia '%s' (%s): " +
-                             "ci sono %d comuni associati. Eliminare prima i comuni.",
-                             found.getProvincia(), found.getSigla(), comuniCount)
+                    String.format("Impossibile eliminare la provincia '%s' (%s): " +
+                                    "ci sono %d comuni associati. Eliminare prima i comuni.",
+                            found.getProvincia(), found.getSigla(), comuniCount)
             );
         }
 
@@ -156,12 +156,12 @@ public class ProvinceService {
     /**
      * Converte l'entità Provincia in DTO di risposta completo
      */
-    private ProvinciaResponseDTO convertToResponseDTO(Provincia provincia) {
+    public ProvinciaResponseDTO convertToResponseDTO(Provincia provincia) {
         if (provincia == null) {
             log.error("Tentativo di conversione di provincia null in DTO");
             throw new IllegalStateException("Provincia null non può essere convertita in DTO");
         }
-        
+
         return new ProvinciaResponseDTO(
                 provincia.getId(),
                 provincia.getSigla(),

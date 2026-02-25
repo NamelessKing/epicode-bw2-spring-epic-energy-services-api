@@ -1,5 +1,6 @@
 package it.epicode.bw2.epicenergyservices.services;
 
+import it.epicode.bw2.epicenergyservices.dto.request.UpdateIndirizziDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.IndirizziDTO;
 import it.epicode.bw2.epicenergyservices.entities.Comune;
 import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
@@ -18,20 +19,36 @@ public class IndirizziService {
 
     private final ComuneRepository comuneRepository;
     private final IndirizziRepository indirizziRepository;
+    private final ComuniService comuniService;
 
 
     @Autowired
-    public IndirizziService(ComuneRepository comuneRepository, IndirizziRepository indirizziRepository) {
+    public IndirizziService(ComuneRepository comuneRepository, IndirizziRepository indirizziRepository, ComuniService comuniService) {
         this.indirizziRepository = indirizziRepository;
         this.comuneRepository = comuneRepository;
 
+        this.comuniService = comuniService;
     }
 
-    public Indirizzo save(Indirizzo indirizzo) {
-        Indirizzo saved = this.indirizziRepository.save(indirizzo);
+    public Indirizzo save(IndirizziDTO payload, Long comuneId) {
+
+        Comune comune = comuniService.findById(comuneId);
+        if (comune == null) throw new NotFoundException("Comune non presente");
+
+        Indirizzo saved = new Indirizzo(
+                payload.via(),
+                payload.civico(),
+                payload.localita(),
+                payload.cap(),
+                comune
+        );
+
+        indirizziRepository.save(saved);
+
         log.info("indirizzo salvato con ID: " + saved.getId());
         return saved;
     }
+
 
     public Indirizzo findById(long id) {
         return this.indirizziRepository.findById(id)
@@ -48,7 +65,7 @@ public class IndirizziService {
         return this.indirizziRepository.findAll();
     }
 
-    public Indirizzo findByIdAndUpdate(long id, IndirizziDTO body) {
+    public Indirizzo findByIdAndUpdate(long id, UpdateIndirizziDTO body) {
         Indirizzo found = this.findById(id);
         found.setVia(body.via());
         found.setCivico(String.valueOf(body.civico()));

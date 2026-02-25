@@ -45,11 +45,12 @@ public class Fattura {
     }
 
 
-    public Fattura(LocalDate data, double importo, long numero, StatoFattura statoFattura) {
+    public Fattura(LocalDate data, double importo, long numero, StatoFattura statoFattura, Utente utente) {
         this.data = data;
         this.importo = importo;
         this.numero = numero;
         this.statoFattura = statoFattura;
+        this.utente = utente;
     }
 
     public long getId() {

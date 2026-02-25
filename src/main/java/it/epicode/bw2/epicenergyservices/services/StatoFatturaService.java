@@ -1,0 +1,42 @@
+package it.epicode.bw2.epicenergyservices.services;
+
+import it.epicode.bw2.epicenergyservices.dto.request.StatoFatturaDTO;
+import it.epicode.bw2.epicenergyservices.entities.StatoFattura;
+import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
+import it.epicode.bw2.epicenergyservices.repositories.StatoFatturaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class StatoFatturaService {
+
+    private final StatoFatturaRepository statoFatturaRepository;
+
+    @Autowired
+    public StatoFatturaService(StatoFatturaRepository statoFatturaRepository) {
+        this.statoFatturaRepository = statoFatturaRepository;
+    }
+
+    //save
+    public StatoFattura save(StatoFatturaDTO payload) {
+        StatoFattura stato = statoFatturaRepository.findByStato(payload.stato());
+        if (stato != null) throw new BadRequestException("Lo stato esiste gia");
+
+        StatoFattura NuovoStato = new StatoFattura(payload.stato());
+
+        return statoFatturaRepository.save(NuovoStato);
+    }
+
+    //find
+    public StatoFattura findStato(String stato) {
+
+        return statoFatturaRepository.findByStato(stato);
+    }
+
+    //
+    public boolean existByStato(String stato) {
+
+        return statoFatturaRepository.existsByStato(stato);
+    }
+
+}
