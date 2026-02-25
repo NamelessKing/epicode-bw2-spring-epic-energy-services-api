@@ -4,12 +4,11 @@ import it.epicode.bw2.epicenergyservices.dto.request.ClienteDTO;
 import it.epicode.bw2.epicenergyservices.entities.Cliente;
 import it.epicode.bw2.epicenergyservices.services.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/clienti")
@@ -21,10 +20,32 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
+    //CREATE
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping
     public Cliente saveCliente(@RequestBody @Validated ClienteDTO payload) {
 
         return this.clienteService.save(payload);
+    }
+
+    //GET ALL
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @GetMapping
+    public Page<Cliente> getAll(Pageable pageable) {
+        return clienteService.findAll(pageable);
+    }
+
+    //GET BY ID
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @GetMapping("/{id}")
+    public Cliente getById(@PathVariable Long id) {
+        return clienteService.findClienteById(id);
+    }
+
+    //UPDATE COMPLETO
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public Cliente updateCliente() {
+        
     }
 }
