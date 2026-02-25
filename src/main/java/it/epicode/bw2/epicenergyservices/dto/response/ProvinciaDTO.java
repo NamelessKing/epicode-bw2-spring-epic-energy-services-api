@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public record ProvinciaDTO(
 
-        long id, @NotBlank(message = "La sigla è obbligatoria")
+        @NotBlank(message = "La sigla è obbligatoria")
         @Size(min = 2, max = 2, message = "La sigla deve essere di 2 caratteri")
         String sigla,
 

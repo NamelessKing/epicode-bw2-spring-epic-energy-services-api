@@ -18,4 +18,10 @@ public interface ComuneRepository extends JpaRepository<Comune, Long> {
     );
 
     boolean existsByProgressivoDelComune(int progressivoDelComune);
+    
+    /**
+     * Conta i comuni associati ad una provincia
+     * Usato per controllo integrità referenziale prima di eliminare provincia
+     */
+    long countByProvinciaId(long provinciaId);
 }
