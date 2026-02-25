@@ -1,75 +1,136 @@
 package it.epicode.bw2.epicenergyservices.services;
 
-import it.epicode.bw2.epicenergyservices.dto.response.IndirizziDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.IndirizzoRequestDTO;
+import it.epicode.bw2.epicenergyservices.dto.response.IndirizzoResponseDTO;
 import it.epicode.bw2.epicenergyservices.entities.Comune;
 import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.ComuneRepository;
 import it.epicode.bw2.epicenergyservices.repositories.IndirizziRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class IndirizziService {
 
-    private final ComuneRepository comuneRepository;
+    private static final List<String> VALID_SORT_FIELDS =
+            Arrays.asList("id", "via", "localita", "cap");
     private final IndirizziRepository indirizziRepository;
+    private final ComuneRepository comuneRepository;
 
+    public Page<IndirizzoResponseDTO> findAll(int page, int size, String orderBy) {
 
-    @Autowired
-    public IndirizziService( ComuneRepository comuneRepository, IndirizziRepository indirizziRepository) {
-        this.indirizziRepository = indirizziRepository;
-        this.comuneRepository = comuneRepository;
+        if (size > 200 || size <= 0) size = 10;
+        if (page < 0) page = 0;
+        if (!VALID_SORT_FIELDS.contains(orderBy)) orderBy = "via";
 
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+
+        return indirizziRepository.findAll(pageable)
+                .map(this::convertToResponseDTO);
     }
 
-    public Indirizzo save(IndirizziDTO payload) {
+    public IndirizzoResponseDTO save(IndirizzoRequestDTO payload) {
+
         Comune comune = comuneRepository.findById(payload.comuneId())
-                .orElseThrow(() -> new NotFoundException("comune non trovato"));
+                .orElseThrow(() ->
+                        new NotFoundException("Comune con id " + payload.comuneId() + " non trovato"));
 
         if (indirizziRepository.existsByViaAndCivicoAndLocalitaAndCapAndComune_Id(
                 payload.via(), payload.civico(), payload.localita(), payload.cap(), comune.getId())) {
-            throw new BadRequestException("esiste già l'indirizzo");
+
+            throw new BadRequestException("Indirizzo già esistente nello stesso comune");
         }
 
-        Indirizzo newIndirizzo = new Indirizzo(
-                payload.via(), payload.civico(), payload.localita(), payload.cap(), comune);
+        Indirizzo indirizzo = new Indirizzo(
+                payload.via(),
+                payload.civico(),
+                payload.localita(),
+                payload.cap(),
+                comune
+        );
 
-        Indirizzo saved = indirizziRepository.save(newIndirizzo);
-        log.info("indirizzo salvato con ID: {}", saved.getId());
-        return saved;
+        Indirizzo saved = indirizziRepository.save(indirizzo);
+
+        log.info("Indirizzo creato ID={}, Via={}", saved.getId(), saved.getVia());
+
+        return convertToResponseDTO(saved);
     }
 
+    public IndirizzoResponseDTO findById(long id) {
 
-    public Indirizzo findById(long id) {
-        return this.indirizziRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("indirizzo con Id: " + id + " non trovato"));
+        Indirizzo indirizzo = indirizziRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Indirizzo con id " + id + " non trovato"));
+
+        return convertToResponseDTO(indirizzo);
+    }
+
+    public IndirizzoResponseDTO findByIdAndUpdate(long id, IndirizzoRequestDTO payload) {
+
+        Indirizzo found = indirizziRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Indirizzo con id " + id + " non trovato"));
+
+        Comune comune = comuneRepository.findById(payload.comuneId())
+                .orElseThrow(() ->
+                        new NotFoundException("Comune con id " + payload.comuneId() + " non trovato"));
+
+        found.setVia(payload.via());
+        found.setCivico(payload.civico());
+        found.setLocalita(payload.localita());
+        found.setCap(payload.cap());
+        found.setComune(comune);
+
+        Indirizzo updated = indirizziRepository.save(found);
+
+        log.info("Indirizzo aggiornato ID={}", updated.getId());
+
+        return convertToResponseDTO(updated);
     }
 
     public void findByIdAndDelete(long id) {
-        Indirizzo found = this.findById(id);
-        this.indirizziRepository.delete(found);
-        log.info("indirizzo con ID: {} eliminato", id);
+
+        Indirizzo found = indirizziRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Indirizzo con id " + id + " non trovato"));
+
+        indirizziRepository.delete(found);
+
+        log.warn("Indirizzo eliminato ID={}", id);
     }
 
-    public List<Indirizzo> findAll() {
-        return this.indirizziRepository.findAll();
-    }
+    private IndirizzoResponseDTO convertToResponseDTO(Indirizzo indirizzo) {
 
-    public Indirizzo findByIdAndUpdate(long id, IndirizziDTO payload) {
-        Indirizzo found = this.findById(id);
-        found.setVia(payload.via());
-        found.setCivico(String.valueOf(payload.civico()));
-        found.setLocalita(payload.localita());
-        found.setCap(String.valueOf(payload.cap()));
-        Comune comune = comuneRepository.findById(payload.comuneId()).orElseThrow(() -> new NotFoundException("comune non trovato"));
-        found.setComune(comune);
-        return this.indirizziRepository.save(found);
+        if (indirizzo == null) {
+            throw new IllegalStateException("Indirizzo null non convertibile");
+        }
+
+        IndirizzoResponseDTO.ComuneEmbeddedDTO comuneDTO =
+                new IndirizzoResponseDTO.ComuneEmbeddedDTO(
+                        indirizzo.getComune().getId(),
+                        indirizzo.getComune().getNomeComune()
+                );
+
+        return new IndirizzoResponseDTO(
+                indirizzo.getId(),
+                indirizzo.getVia(),
+                indirizzo.getCivico(),
+                indirizzo.getLocalita(),
+                indirizzo.getCap(),
+                comuneDTO
+        );
     }
 
 }
