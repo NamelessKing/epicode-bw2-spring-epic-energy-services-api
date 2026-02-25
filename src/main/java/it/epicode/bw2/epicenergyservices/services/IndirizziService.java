@@ -16,29 +16,32 @@ import java.util.List;
 @Service
 @Slf4j
 public class IndirizziService {
-    private final ComuniService comuniService;
 
     private final ComuneRepository comuneRepository;
     private final IndirizziRepository indirizziRepository;
 
 
     @Autowired
-    public IndirizziService(ComuniService comuniService, ComuneRepository comuneRepository, IndirizziRepository indirizziRepository) {
-        this.comuniService = comuniService;
+    public IndirizziService( ComuneRepository comuneRepository, IndirizziRepository indirizziRepository) {
         this.indirizziRepository = indirizziRepository;
         this.comuneRepository = comuneRepository;
 
     }
 
     public Indirizzo save(IndirizziDTO payload) {
-        Comune found = comuniService.findById(payload.comuneId());
+        Comune comune = comuneRepository.findById(payload.comuneId())
+                .orElseThrow(() -> new NotFoundException("comune non trovato"));
 
-        if (indirizziRepository.existsByViaAndCivicoAndLocalitaAndCapAndComune(payload.via(), payload.civico(), payload.localita(), payload.cap(), found)) {
+        if (indirizziRepository.existsByViaAndCivicoAndLocalitaAndCapAndComune_Id(
+                payload.via(), payload.civico(), payload.localita(), payload.cap(), comune.getId())) {
             throw new BadRequestException("esiste già l'indirizzo");
         }
-        Indirizzo newIndirizzo = new Indirizzo(payload.via(), payload.civico(), payload.localita(), payload.cap(), found);
-        Indirizzo saved = this.indirizziRepository.save(newIndirizzo);
-        log.info("indirizzo salvato con ID: " + saved.getId());
+
+        Indirizzo newIndirizzo = new Indirizzo(
+                payload.via(), payload.civico(), payload.localita(), payload.cap(), comune);
+
+        Indirizzo saved = indirizziRepository.save(newIndirizzo);
+        log.info("indirizzo salvato con ID: {}", saved.getId());
         return saved;
     }
 
@@ -51,7 +54,7 @@ public class IndirizziService {
     public void findByIdAndDelete(long id) {
         Indirizzo found = this.findById(id);
         this.indirizziRepository.delete(found);
-        log.info("indirizzo con ID: " + id + " eliminato");
+        log.info("indirizzo con ID: {} eliminato", id);
     }
 
     public List<Indirizzo> findAll() {
