@@ -26,26 +26,26 @@ public class FatturaService {
     }
 
     //save
-    public Fattura save(FatturaDTO payload, Utente utente, long idCliente) {
-
-        if (fatturaRepository.existsByNumero(payload.numero())) {
-            throw new BadRequestException("Il numero di fattura " + payload.numero() + " è gia stato assegnato.");
-
-        }
-        StatoFattura statoFromDb = this.statoFatturaService.findStato("EMESSA");
-        Cliente clienteFromDB = this.clienteService.findClienteById(idCliente);
-        if (clienteFromDB == null) throw new NotFoundException("Cliente non valido");
-
-        Fattura fattura = new Fattura();
-        fattura.setData(payload.data());
-        fattura.setImporto(payload.importo());
-        fattura.setNumero(payload.numero());
-        fattura.setStato(statoFromDb);
-        fattura.setUtente(utente);
-        fattura.setCliente(clienteFromDB);
-
-        return fatturaRepository.save(fattura);
-    }
+//    public Fattura save(FatturaDTO payload, Utente utente, long idCliente) {
+//
+//        if (fatturaRepository.existsByNumero(payload.numero())) {
+//            throw new BadRequestException("Il numero di fattura " + payload.numero() + " è gia stato assegnato.");
+//
+//        }
+//        StatoFattura statoFromDb = this.statoFatturaService.findStato("EMESSA");
+//        Cliente clienteFromDB = this.clienteService.findClienteById(idCliente);
+//        if (clienteFromDB == null) throw new NotFoundException("Cliente non valido");
+//
+//        Fattura fattura = new Fattura();
+//        fattura.setData(payload.data());
+//        fattura.setImporto(payload.importo());
+//        fattura.setNumero(payload.numero());
+//        fattura.setStato(statoFromDb);
+//        fattura.setUtente(utente);
+//        fattura.setCliente(clienteFromDB);
+//
+//        return fatturaRepository.save(fattura);
+//    }
 
     //update
 

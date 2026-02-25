@@ -76,7 +76,7 @@ public class Cliente {
 
     //relazione OneToOne con id_sede_operativa
     @OneToOne
-    @JoinColumn(name = "id_sede_operativa", nullable = false)
+    @JoinColumn(name = "id_sede_operativa")
     private Indirizzo indirizzoSedeOperativa;
 
     public Cliente() {
@@ -86,36 +86,63 @@ public class Cliente {
     public Cliente(String ragioneSociale,
                    String partitaIva,
                    String email,
-                   LocalDate dataUltimoContatto,
                    double fatturatoAnnuale,
                    String pec,
                    String telefono,
-                   String logoAziendale,
                    TipoAzienda tipo,
                    String emailContatto,
                    String nomeContatto,
                    String cognomeContatto,
                    String telefonoContatto,
-                   Indirizzo sedeLegale,
-                   Indirizzo sedeOperativa
+                   Indirizzo sedeLegale
     ) {
         this.ragioneSociale = ragioneSociale;
         this.partitaIva = partitaIva;
         this.email = email;
         this.dataInserimento = LocalDate.now();
-        this.dataUltimoContatto = dataUltimoContatto;
+        this.dataUltimoContatto = LocalDate.now();
         this.fatturatoAnnuale = fatturatoAnnuale;
         this.pec = pec;
         this.telefono = telefono;
-        this.logoAziendale = logoAziendale;
+        this.logoAziendale = "https://placebear.com/200/200";
         this.tipo = tipo;
         this.emailContatto = emailContatto;
         this.nomeContatto = nomeContatto;
         this.cognomeContatto = cognomeContatto;
         this.telefonoContatto = telefonoContatto;
         this.indirizzoSedeLegale = sedeLegale;
-        this.indirizzoSedeOperativa = sedeOperativa;
+
     }
+
+
+//    public Cliente(
+//            String ragioneSociale,
+//            String partitaIva,
+//            String email,
+//            double fatturatoAnnuale,
+//            String pec,
+//            String telefono,
+//            TipoAzienda tipo,
+//            LocalDate dataInserimento,
+//            String emailContatto,
+//            String nomeContatto,
+//            String cognomeContatto,
+//            String telefonoContatto
+//    ) {
+//        this.ragioneSociale = ragioneSociale;
+//        this.partitaIva = partitaIva;
+//        this.email = email;
+//        this.fatturatoAnnuale = fatturatoAnnuale;
+//        this.pec = pec;
+//        this.telefono = telefono;
+//        this.tipo = tipo;
+//        this.dataInserimento = dataInserimento;
+//        this.emailContatto = emailContatto;
+//        this.nomeContatto = nomeContatto;
+//        this.cognomeContatto = cognomeContatto;
+//        this.telefonoContatto = telefonoContatto;
+//    }
+
 
     public String getRagioneSociale() {
         return ragioneSociale;

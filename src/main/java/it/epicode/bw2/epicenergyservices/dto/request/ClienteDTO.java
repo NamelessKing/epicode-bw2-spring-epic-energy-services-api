@@ -1,5 +1,6 @@
 package it.epicode.bw2.epicenergyservices.dto.request;
 
+import it.epicode.bw2.epicenergyservices.dto.response.IndirizziDTO;
 import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
 import it.epicode.bw2.epicenergyservices.entities.TipoAzienda;
 import jakarta.validation.constraints.*;
@@ -51,9 +52,7 @@ public record ClienteDTO(
         )
         String telefonoContatto,
 
-        @Positive
-        Long idSedeLegale,
-        @Positive
-        Long idSedeOperativa
+        @NotNull
+        IndirizziDTO sedeLegale
 ) {
 }

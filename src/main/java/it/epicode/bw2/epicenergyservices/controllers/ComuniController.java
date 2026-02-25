@@ -35,33 +35,33 @@ public class ComuniController {
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(
-        summary = "Lista paginata di tutti i comuni", 
-        description = "Recupera lista paginata di comuni italiani con i dettagli completi della provincia"
+            summary = "Lista paginata di tutti i comuni",
+            description = "Recupera lista paginata di comuni italiani con i dettagli completi della provincia"
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "200", 
-            description = "Lista recuperata con successo",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
-        ),
-        @ApiResponse(
-            responseCode = "401", 
-            description = "Token JWT non valido o mancante",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "403", 
-            description = "Accesso negato - Ruolo non autorizzato",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        )
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista recuperata con successo",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Token JWT non valido o mancante",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Accesso negato - Ruolo non autorizzato",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            )
     })
     public Page<ComuneResponseDTO> getAll(
             @Parameter(description = "Numero pagina (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int page,
-            
+
             @Parameter(description = "Elementi per pagina (max 200)", example = "10")
             @RequestParam(defaultValue = "10") int size,
-            
+
             @Parameter(description = "Campo per ordinamento", example = "nomeComune")
             @RequestParam(defaultValue = "nomeComune") String orderBy
     ) {
@@ -72,67 +72,67 @@ public class ComuniController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(
-        summary = "Trova comune per ID",
-        description = "Recupera i dettagli completi di un comune specifico inclusi i dati della provincia"
+            summary = "Trova comune per ID",
+            description = "Recupera i dettagli completi di un comune specifico inclusi i dati della provincia"
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "200", 
-            description = "Comune trovato",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ComuneResponseDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "404", 
-            description = "Comune non trovato",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "401", 
-            description = "Non autenticato",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        )
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Comune trovato",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ComuneResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Comune non trovato",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Non autenticato",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            )
     })
     public ComuneResponseDTO getById(
             @Parameter(description = "ID del comune", example = "1", required = true)
             @PathVariable long id
     ) {
         log.debug("GET /comuni/{} richiesto", id);
-        return comuniService.findById(id);
+        return comuniService.convertToResponseDTO(comuniService.findById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
-        summary = "Crea nuovo comune (ADMIN only)",
-        description = "Crea un nuovo comune nel database. Richiede ruolo ADMIN. Il progressivo deve essere univoco."
+            summary = "Crea nuovo comune (ADMIN only)",
+            description = "Crea un nuovo comune nel database. Richiede ruolo ADMIN. Il progressivo deve essere univoco."
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "201", 
-            description = "Comune creato con successo",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ComuneResponseDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "400", 
-            description = "Dati non validi o comune già esistente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "422",
-            description = "Errori di validazione",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsWithListDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "403", 
-            description = "Accesso negato - Solo ADMIN",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Provincia non trovata",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        )
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Comune creato con successo",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ComuneResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dati non validi o comune già esistente",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "Errori di validazione",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsWithListDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Accesso negato - Solo ADMIN",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Provincia non trovata",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            )
     })
     public ComuneResponseDTO create(
             @RequestBody @Valid ComuneRequestDTO payload,
@@ -147,35 +147,35 @@ public class ComuniController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
-        summary = "Aggiorna comune (ADMIN only)",
-        description = "Aggiorna i dati di un comune esistente. Richiede ruolo ADMIN."
+            summary = "Aggiorna comune (ADMIN only)",
+            description = "Aggiorna i dati di un comune esistente. Richiede ruolo ADMIN."
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "200", 
-            description = "Comune aggiornato con successo",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ComuneResponseDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "404", 
-            description = "Comune o Provincia non trovati",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Dati non validi o progressivo già in uso",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "422",
-            description = "Errori di validazione",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsWithListDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "403", 
-            description = "Accesso negato - Solo ADMIN",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        )
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Comune aggiornato con successo",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ComuneResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Comune o Provincia non trovati",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dati non validi o progressivo già in uso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "Errori di validazione",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsWithListDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Accesso negato - Solo ADMIN",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            )
     })
     public ComuneResponseDTO update(
             @Parameter(description = "ID del comune da aggiornare", example = "1", required = true)
@@ -193,26 +193,26 @@ public class ComuniController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
-        summary = "Elimina comune (ADMIN only)",
-        description = "Elimina definitivamente un comune dal database. Richiede ruolo ADMIN.  ATTENZIONE: Operazione irreversibile!"
+            summary = "Elimina comune (ADMIN only)",
+            description = "Elimina definitivamente un comune dal database. Richiede ruolo ADMIN.  ATTENZIONE: Operazione irreversibile!"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Comune eliminato con successo"),
-        @ApiResponse(
-            responseCode = "404", 
-            description = "Comune non trovato",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "403", 
-            description = "Accesso negato - Solo ADMIN",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Impossibile eliminare - Comune referenziato da altri record",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-        )
+            @ApiResponse(responseCode = "204", description = "Comune eliminato con successo"),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Comune non trovato",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Accesso negato - Solo ADMIN",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Impossibile eliminare - Comune referenziato da altri record",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
+            )
     })
     public void delete(
             @Parameter(description = "ID del comune da eliminare", example = "1", required = true)

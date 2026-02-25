@@ -24,12 +24,13 @@ import java.util.List;
 public class ComuniService {
 
     private final ComuneRepository comuneRepository;
+    private final ProvinceService provinceService;
     private final ProvinciaRepository provinciaRepository;
     private final IndirizziRepository indirizziRepository;
-    
+
     // Campi validi per ordinamento
     private static final List<String> VALID_SORT_FIELDS = Arrays.asList(
-        "id", "nomeComune", "progressivoDelComune"
+            "id", "nomeComune", "progressivoDelComune"
     );
 
     public Page<ComuneResponseDTO> findAll(int page, int size, String orderBy) {
@@ -43,12 +44,12 @@ public class ComuniService {
             log.warn("Page non valido ({}), impostato a default: 0", page);
             page = 0;
         }
-        
+
         // Validazione orderBy - previene errori e SQL injection
         if (orderBy == null || orderBy.isBlank() || !VALID_SORT_FIELDS.contains(orderBy)) {
             if (orderBy != null && !orderBy.isBlank()) {
-                log.warn("Campo ordinamento '{}' non valido. Campi validi: {}. Uso default 'nomeComune'", 
-                         orderBy, VALID_SORT_FIELDS);
+                log.warn("Campo ordinamento '{}' non valido. Campi validi: {}. Uso default 'nomeComune'",
+                        orderBy, VALID_SORT_FIELDS);
             }
             orderBy = "nomeComune";
         }
@@ -82,13 +83,13 @@ public class ComuniService {
         return convertToResponseDTO(saved);
     }
 
-    public ComuneResponseDTO findById(long comuneId) {
+    public Comune findById(long comuneId) {
 
         Comune comune = comuneRepository.findById(comuneId)
                 .orElseThrow(() ->
                         new NotFoundException("Comune con id " + comuneId + " non trovato"));
 
-        return convertToResponseDTO(comune);
+        return comune;
     }
 
     public ComuneResponseDTO findByIdAndUpdate(long comuneId, ComuneRequestDTO payload) {
@@ -100,7 +101,7 @@ public class ComuniService {
         // Verifica se il progressivo cambia e se è già in uso
         if (found.getProgressivoDelComune() != payload.progressivoDelComune()) {
             if (comuneRepository.existsByProgressivoDelComune(payload.progressivoDelComune())) {
-                throw new BadRequestException("Progressivo " + payload.progressivoDelComune() 
+                throw new BadRequestException("Progressivo " + payload.progressivoDelComune()
                         + " già assegnato ad altro comune");
             }
         }
@@ -132,12 +133,12 @@ public class ComuniService {
         // Verifica integrità referenziale: controlla se ci sono indirizzi associati
         long indirizziCount = indirizziRepository.countByComuneId(comuneId);
         if (indirizziCount > 0) {
-            log.error("Impossibile eliminare comune ID {} ({}): ha {} indirizzi associati", 
-                      comuneId, found.getNomeComune(), indirizziCount);
+            log.error("Impossibile eliminare comune ID {} ({}): ha {} indirizzi associati",
+                    comuneId, found.getNomeComune(), indirizziCount);
             throw new ConflictException(
-                String.format("Impossibile eliminare il comune '%s': " +
-                             "ci sono %d indirizzi associati. Eliminare prima gli indirizzi.",
-                             found.getNomeComune(), indirizziCount)
+                    String.format("Impossibile eliminare il comune '%s': " +
+                                    "ci sono %d indirizzi associati. Eliminare prima gli indirizzi.",
+                            found.getNomeComune(), indirizziCount)
             );
         }
 
@@ -149,28 +150,28 @@ public class ComuniService {
      * Converte l'entità Comune in DTO di risposta completo
      * Include i dati della provincia embedded
      */
-    private ComuneResponseDTO convertToResponseDTO(Comune comune) {
+    public ComuneResponseDTO convertToResponseDTO(Comune comune) {
         if (comune == null) {
             log.error("Tentativo di conversione di comune null in DTO");
             throw new IllegalStateException("Comune null non può essere convertito in DTO");
         }
-        
+
         Provincia provincia = comune.getProvincia();
-        
+
         if (provincia == null) {
             log.error("Comune ID {} ha provincia null - dato corrotto!", comune.getId());
             throw new IllegalStateException(
-                "Comune ID " + comune.getId() + " ha provincia null - integrità dati compromessa"
+                    "Comune ID " + comune.getId() + " ha provincia null - integrità dati compromessa"
             );
         }
-        
-        ComuneResponseDTO.ProvinciaEmbeddedDTO provinciaDTO = 
-            new ComuneResponseDTO.ProvinciaEmbeddedDTO(
-                provincia.getId(),
-                provincia.getSigla(),
-                provincia.getProvincia(),
-                provincia.getRegione()
-            );
+
+        ComuneResponseDTO.ProvinciaEmbeddedDTO provinciaDTO =
+                new ComuneResponseDTO.ProvinciaEmbeddedDTO(
+                        provincia.getId(),
+                        provincia.getSigla(),
+                        provincia.getProvincia(),
+                        provincia.getRegione()
+                );
 
         return new ComuneResponseDTO(
                 comune.getId(),
@@ -178,5 +179,13 @@ public class ComuniService {
                 comune.getNomeComune(),
                 provinciaDTO
         );
+    }
+
+    //metodo per filtrare data una provincia
+    public Page<Comune> getListByProvincia(Long idProvincia, Pageable pageable) {
+
+        Page<Comune> listaComuni = comuneRepository.findByProvincia_Id(idProvincia, pageable);
+
+        return listaComuni;
     }
 }
