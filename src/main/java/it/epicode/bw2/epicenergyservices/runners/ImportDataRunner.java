@@ -18,26 +18,25 @@ public class ImportDataRunner implements CommandLineRunner {
     private final ImportAnagraficheService importAnagraficheService;
     private final ProvinciaRepository provinciaRepository;
 
+    @Value("${app.import.enabled:false}")
+    private boolean importEnabled;
+
     @Override
-    public void run(String... args) throws Exception {
-        log.info("=== Verifica import CSV Province e Comuni ===");
+    public void run(String... args) {
 
-        // Controlla se il database è già popolato
-        long provinceCount = provinciaRepository.count();
-
-        if (provinceCount > 0) {
-            log.info("Database già popolato ({} province presenti), skip import CSV", provinceCount);
+        if (!importEnabled) {
+            log.info("Import CSV disabilitato (app.import.enabled=false)");
             return;
         }
 
-        log.info("Database vuoto, avvio import automatico da CSV...");
-
-        try {
-            importAnagraficheService.importaTutto();
-            log.info("Import CSV completato con successo");
-        } catch (Exception e) {
-            log.error("Errore durante import CSV", e);
-            throw e; // Rilancia per far fallire l'avvio se l'import è critico
+        long provinceCount = provinciaRepository.count();
+        if (provinceCount > 0) {
+            log.info("DB già popolato ({} province). Skip import.", provinceCount);
+            return;
         }
+
+        log.info("DB vuoto -> import Province + Comuni...");
+        importAnagraficheService.importaTutto();
+        log.info("Import completato.");
     }
 }
