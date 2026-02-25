@@ -33,16 +33,16 @@ public class ClienteController {
     //GET ALL
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
-    public Page<Cliente> getAll(Pageable pageable) {
-        return clienteService.findAll(pageable);
+    public Page<Cliente> getAllActive(Pageable pageable) {
+        return clienteService.findAllActive(pageable);
     }
 
     //GET BY ID
-//    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-//    @GetMapping("/{id}")
-//    public ClienteResponseDTO getById(@PathVariable Long id) {
-//        return clienteService.findClienteById(id);
-//    }
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @GetMapping("/{id}")
+    public ClienteResponseDTO getById(@PathVariable Long id) {
+        return clienteService.toResponseDTO(clienteService.findClienteById(id));
+    }
 
     //UPDATE COMPLETO
 //    @PreAuthorize("hasRole('ADMIN')")
@@ -58,10 +58,18 @@ public class ClienteController {
 //        return clienteService.updateContatto(id, payload);
 //    }
 
-    // DELETE
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @DeleteMapping("/{id}")
-//    public void deleteCliente(@PathVariable Long id) {
-//        clienteService.delete(id);
-//    }
+    // PATCH per modificare lo stato attivo di un cliente
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/disable")
+    public ClienteResponseDTO impostaClienteInattivo(@PathVariable Long id) {
+        Cliente clienteModificato = clienteService.modificaStato(id, false);
+        return clienteService.toResponseDTO(clienteModificato);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/enable")
+    public ClienteResponseDTO impostaClienteAttivo(@PathVariable Long id) {
+        Cliente clienteModificato = clienteService.modificaStato(id, true);
+        return clienteService.toResponseDTO(clienteModificato);
+    }
 }

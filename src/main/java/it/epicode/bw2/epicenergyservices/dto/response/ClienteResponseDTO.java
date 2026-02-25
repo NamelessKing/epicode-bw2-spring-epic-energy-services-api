@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 public record ClienteResponseDTO(
         Long id,
+        boolean attivo,
         String logoAziendale,
         String ragioneSociale,
         String partitaIva,

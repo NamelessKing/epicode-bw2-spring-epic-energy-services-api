@@ -33,9 +33,10 @@ public class ClienteService {
         this.comuniService = comuniService;
     }
 
-    private ClienteResponseDTO toResponseDTO(Cliente cliente) {
+    public ClienteResponseDTO toResponseDTO(Cliente cliente) {
         return new ClienteResponseDTO(
                 cliente.getId(),
+                cliente.isAttivo(),
                 cliente.getLogoAziendale(),
                 cliente.getRagioneSociale(),
                 cliente.getPartitaIva(),
@@ -85,7 +86,7 @@ public class ClienteService {
                 payload.telefonoContatto(),
                 indirizzoCliente
         );
-      
+
 
         Cliente saved = clienteRepository.save(cliente);
         return toResponseDTO(saved);
@@ -93,17 +94,19 @@ public class ClienteService {
     }
 
     //findById
-//    public Cliente findClienteById(Long id) {
-//        Cliente found = clienteRepository.findById(id).orElseThrow(() ->
-//                new NotFoundException("cliente con id: " + id + " non trovato."));
-//
-//        return toResponseDTO(found);
-//
-//    }
+    public Cliente findClienteById(Long id) {
+        Cliente found = clienteRepository.findById(id).orElseThrow(() ->
+                new NotFoundException("cliente con id: " + id + " non trovato."));
+
+        return found;
+
+    }
 
     //findAll
-    public Page<Cliente> findAll(Pageable pageable) {
-        return clienteRepository.findAll(pageable);
+    public Page<Cliente> findAllActive(Pageable pageable) {
+
+
+        return clienteRepository.findByAttivoTrue(pageable);
 
     }
 
@@ -138,28 +141,33 @@ public class ClienteService {
 //        return toResponseDTO(saved);
 //    }
 
-    //update cliente
-//    public Cliente updateContatto(Long id, UpdateContattoDTO payload) {
-//
-//        Cliente cliente = findClienteById(id);
-//
-//        if (!cliente.getEmailContatto().equals(payload.emailContatto()) && clienteRepository.existsByEmail(payload.emailContatto())) {
-//            throw new BadRequestException("Esiste gia un contatto con questa mail");
-//        }
-//
-//        cliente.setEmailContatto(payload.emailContatto());
-//        cliente.setNomeContatto(payload.nomeContatto());
-//        cliente.setCognomeContatto(payload.cognomeContatto());
-//        cliente.setTelefonoContatto(payload.telefonoContatto());
-//
-//        return clienteRepository.save(cliente);
-//    }
+    //update contatto
+    public Cliente updateContatto(Long id, UpdateContattoDTO payload) {
 
-    // elimina cliente
-//    public void delete(Long id) {
-//        Cliente cliente = findClienteById(id);
-//        clienteRepository.delete(cliente);
-//    }
+        Cliente cliente = findClienteById(id);
+
+        if (!cliente.getEmailContatto().equals(payload.emailContatto()) && clienteRepository.existsByEmail(payload.emailContatto())) {
+            throw new BadRequestException("Esiste gia un contatto con questa mail");
+        }
+
+        cliente.setEmailContatto(payload.emailContatto());
+        cliente.setNomeContatto(payload.nomeContatto());
+        cliente.setCognomeContatto(payload.cognomeContatto());
+        cliente.setTelefonoContatto(payload.telefonoContatto());
+
+        return clienteRepository.save(cliente);
+    }
+
+    // imposta lo stato ATTIVO del cliente a false
+
+    public Cliente modificaStato(Long id, boolean isActive) {
+        Cliente cliente = findClienteById(id);
+        
+
+        cliente.setStato(isActive);
+
+        return clienteRepository.save(cliente);
+    }
 
 
 }

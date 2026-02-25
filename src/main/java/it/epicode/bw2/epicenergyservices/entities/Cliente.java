@@ -16,6 +16,9 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(name = "status_cliente")
+    private boolean stato = true;
+
     @Column(nullable = false)
     @NotBlank(message = "Ragione sociale obbligatoria")
     private String ragioneSociale;
@@ -274,5 +277,13 @@ public class Cliente {
 
     public void setIndirizzoSedeOperativa(Indirizzo indirizzoSedeOperativa) {
         this.indirizzoSedeOperativa = indirizzoSedeOperativa;
+    }
+
+    public boolean isAttivo() {
+        return stato;
+    }
+
+    public void setStato(boolean stato) {
+        this.stato = stato;
     }
 }
