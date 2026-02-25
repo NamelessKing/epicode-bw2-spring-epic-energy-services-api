@@ -232,4 +232,20 @@ public class Cliente {
     public void setTelefonoContatto(String telefonoContatto) {
         this.telefonoContatto = telefonoContatto;
     }
+
+    public Indirizzo getIndirizzoSedeLegale() {
+        return indirizzoSedeLegale;
+    }
+
+    public void setIndirizzoSedeLegale(Indirizzo indirizzoSedeLegale) {
+        this.indirizzoSedeLegale = indirizzoSedeLegale;
+    }
+
+    public Indirizzo getIndirizzoSedeOperativa() {
+        return indirizzoSedeOperativa;
+    }
+
+    public void setIndirizzoSedeOperativa(Indirizzo indirizzoSedeOperativa) {
+        this.indirizzoSedeOperativa = indirizzoSedeOperativa;
+    }
 }

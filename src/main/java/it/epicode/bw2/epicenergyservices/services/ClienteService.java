@@ -3,6 +3,7 @@ package it.epicode.bw2.epicenergyservices.services;
 import it.epicode.bw2.epicenergyservices.dto.request.ClienteDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
 import it.epicode.bw2.epicenergyservices.entities.Cliente;
+import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.ClienteRepository;
@@ -16,10 +17,12 @@ import java.time.LocalDate;
 @Service
 public class ClienteService {
 
+    private final IndirizziService indirizziService;
     private final ClienteRepository clienteRepository;
 
     @Autowired
-    public ClienteService(ClienteRepository clienteRepository) {
+    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository) {
+        this.indirizziService = indirizziService;
         this.clienteRepository = clienteRepository;
     }
 
@@ -48,6 +51,16 @@ public class ClienteService {
         cliente.setNomeContatto(payload.nomeContatto());
         cliente.setCognomeContatto(payload.cognomeContatto());
         cliente.setTelefonoContatto(payload.telefonoContatto());
+
+        if (payload.idSedeLegale() != null) {
+            Indirizzo sedeLegale = indirizziService.findById(payload.idSedeLegale());
+            cliente.setIndirizzoSedeLegale(sedeLegale);
+        }
+
+        if (payload.idSedeOperativa() != null) {
+            Indirizzo sedeOperativa = indirizziService.findById(payload.idSedeOperativa());
+            cliente.setIndirizzoSedeOperativa(sedeOperativa);
+        }
 
         return clienteRepository.save(cliente);
         // TODO: INVIARE EMAIL DI BENVENUTO

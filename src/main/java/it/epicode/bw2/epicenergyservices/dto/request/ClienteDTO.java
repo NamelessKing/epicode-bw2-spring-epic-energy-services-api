@@ -52,8 +52,8 @@ public record ClienteDTO(
         String telefonoContatto,
 
         @Positive
-        long idSedeLegale,
+        Long idSedeLegale,
         @Positive
-        long idSedeOperativa
+        Long idSedeOperativa
 ) {
 }
