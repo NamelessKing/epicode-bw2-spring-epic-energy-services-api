@@ -1,6 +1,7 @@
 package it.epicode.bw2.epicenergyservices.controllers;
 
 import it.epicode.bw2.epicenergyservices.dto.request.ClienteDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
 import it.epicode.bw2.epicenergyservices.entities.Cliente;
 import it.epicode.bw2.epicenergyservices.services.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,21 @@ public class ClienteController {
     //UPDATE COMPLETO
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public Cliente updateCliente() {
-        
+    public Cliente updateCliente(@PathVariable Long id, @RequestBody @Validated ClienteDTO payload) {
+        return clienteService.updateCliente(id, payload);
+    }
+
+    //UPDATE CONTATTO
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/contatto")
+    public Cliente updateContatto(@PathVariable Long id, @RequestBody @Validated UpdateContattoDTO payload) {
+        return clienteService.updateContatto(id, payload);
+    }
+
+    // DELETE
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public void deleteCliente(@PathVariable Long id) {
+        clienteService.delete(id);
     }
 }
