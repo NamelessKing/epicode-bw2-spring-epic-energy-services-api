@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.epicode.bw2.epicenergyservices.dto.request.IndirizzoRequestDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +27,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Indirizzi", description = "Gestione indirizzi italiani - Operazioni CRUD")
-//@SecurityRequirement(name = "Bearer Authentication")
+@SecurityRequirement(name = "Bearer Authentication")
 public class IndirizziController {
 
     private final IndirizziService indirizziService;
 
     @GetMapping
-    //@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(
             summary = "Lista paginata di tutti gli indirizzi",
             description = "Recupera lista paginata di indirizzi con dettagli completi del comune associato"
@@ -71,7 +73,7 @@ public class IndirizziController {
     }
 
     @GetMapping("/{id}")
-    // @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @Operation(
             summary = "Trova indirizzo per ID",
             description = "Recupera i dettagli completi di un indirizzo specifico incluso il comune associato"
@@ -104,60 +106,60 @@ public class IndirizziController {
         return indirizziService.findById(id);
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    // @PreAuthorize("hasRole('ADMIN')")
-    @Operation(
-            summary = "Crea nuovo indirizzo (ADMIN only)",
-            description = "Crea un nuovo indirizzo nel database. Richiede ruolo ADMIN. L'indirizzo deve essere univoco nel comune."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Indirizzo creato con successo",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = IndirizzoResponseDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Dati non validi o indirizzo già esistente",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorsDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "422",
-                    description = "Errori di validazione",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorsWithListDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Accesso negato - Solo ADMIN",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorsDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Comune non trovato",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorsDTO.class))
-            )
-    })
-    public IndirizzoResponseDTO create(
-            @RequestBody @Valid IndirizzoRequestDTO payload,
-            Authentication auth
-    ) {
-        log.info("POST /indirizzi - ADMIN '{}' sta creando indirizzo in via {}",
-                auth.getName(), payload.via());
-
-        IndirizzoResponseDTO created = indirizziService.save(payload);
-
-        log.info("Indirizzo creato: ID={}, Via={}", created.id(), created.via());
-        return created;
-    }
+//    @PostMapping TODO QUESTO è STATO COMENTATO APPOSTA PERCHè MOLTO PROBABILMENTE POTREBBE NON SERVIRE
+//    @ResponseStatus(HttpStatus.CREATED)
+//    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+//    @Operation(
+//            summary = "Crea nuovo indirizzo (ADMIN only)",
+//            description = "Crea un nuovo indirizzo nel database. Richiede ruolo ADMIN. L'indirizzo deve essere univoco nel comune."
+//    )
+//    @ApiResponses({
+//            @ApiResponse(
+//                    responseCode = "201",
+//                    description = "Indirizzo creato con successo",
+//                    content = @Content(mediaType = "application/json",
+//                            schema = @Schema(implementation = IndirizzoResponseDTO.class))
+//            ),
+//            @ApiResponse(
+//                    responseCode = "400",
+//                    description = "Dati non validi o indirizzo già esistente",
+//                    content = @Content(mediaType = "application/json",
+//                            schema = @Schema(implementation = ErrorsDTO.class))
+//            ),
+//            @ApiResponse(
+//                    responseCode = "422",
+//                    description = "Errori di validazione",
+//                    content = @Content(mediaType = "application/json",
+//                            schema = @Schema(implementation = ErrorsWithListDTO.class))
+//            ),
+//            @ApiResponse(
+//                    responseCode = "403",
+//                    description = "Accesso negato - Solo ADMIN",
+//                    content = @Content(mediaType = "application/json",
+//                            schema = @Schema(implementation = ErrorsDTO.class))
+//            ),
+//            @ApiResponse(
+//                    responseCode = "404",
+//                    description = "Comune non trovato",
+//                    content = @Content(mediaType = "application/json",
+//                            schema = @Schema(implementation = ErrorsDTO.class))
+//            )
+//    })
+//    public IndirizzoResponseDTO create(
+//            @RequestBody @Valid IndirizzoRequestDTO payload,
+//            Authentication auth
+//    ) {
+//        log.info("POST /indirizzi - ADMIN '{}' sta creando indirizzo in via {}",
+//                auth.getName(), payload.via());
+//
+//        IndirizzoResponseDTO created = indirizziService.save(payload);
+//
+//        log.info("Indirizzo creato: ID={}, Via={}", created.id(), created.via());
+//        return created;
+//    }
 
     @PutMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @Operation(
             summary = "Aggiorna indirizzo (ADMIN only)",
             description = "Aggiorna i dati di un indirizzo esistente. Richiede ruolo ADMIN."
@@ -211,7 +213,7 @@ public class IndirizziController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    // @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @Operation(
             summary = "Elimina indirizzo (ADMIN only)",
             description = "Elimina definitivamente un indirizzo dal database. Operazione irreversibile."
@@ -243,12 +245,12 @@ public class IndirizziController {
 
         log.info("Indirizzo ID {} eliminato definitivamente", id);
     }
-    //{
-    //  "via": "roma",
-    //  "civico": "1",
-    //  "localita": "localitAA",
-    //  "cap": "10110",
-    //  "comuneId": 1
-    //}
+//    {
+//      "via": "roma",
+//      "civico": "1",
+//      "localita": "localitAA",
+//      "cap": "10110",
+//      "comuneId": 1
+//    }
 
 }
