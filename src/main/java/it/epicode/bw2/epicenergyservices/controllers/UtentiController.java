@@ -35,9 +35,7 @@ public class UtentiController {
     @PreAuthorize("hasRole('ADMIN')")
     public Utente addRuoloUtente(@RequestBody @Validated Long idUtente, Long idRuolo, BindingResult valRes) {
         if (valRes.hasErrors()) {
-            List<String> errList = valRes.getFieldErrors()
-                    .stream()
-                    .map(fieldError -> fieldError.getDefaultMessage()).toList();
+            List<String> errList = valRes.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).toList();
 
             throw new ValidationException(errList);
         }
