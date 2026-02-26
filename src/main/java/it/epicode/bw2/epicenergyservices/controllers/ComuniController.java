@@ -12,11 +12,14 @@ import it.epicode.bw2.epicenergyservices.dto.request.ComuneRequestDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ComuneResponseDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsWithListDTO;
+import it.epicode.bw2.epicenergyservices.entities.Comune;
 import it.epicode.bw2.epicenergyservices.services.ComuniService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -32,42 +35,6 @@ public class ComuniController {
 
     private final ComuniService comuniService;
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @Operation(
-            summary = "Lista paginata di tutti i comuni",
-            description = "Recupera lista paginata di comuni italiani con i dettagli completi della provincia"
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista recuperata con successo",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Token JWT non valido o mancante",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Accesso negato - Ruolo non autorizzato",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
-            )
-    })
-    public Page<ComuneResponseDTO> getAll(
-            @Parameter(description = "Numero pagina (0-based)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
-
-            @Parameter(description = "Elementi per pagina (max 200)", example = "10")
-            @RequestParam(defaultValue = "10") int size,
-
-            @Parameter(description = "Campo per ordinamento", example = "nomeComune")
-            @RequestParam(defaultValue = "nomeComune") String orderBy
-    ) {
-        log.debug("GET /comuni - page: {}, size: {}, orderBy: {}", page, size, orderBy);
-        return comuniService.findAll(page, size, orderBy);
-    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -222,5 +189,12 @@ public class ComuniController {
         log.warn("DELETE /comuni/{} - ADMIN '{}' sta eliminando comune - IRREVERSIBILE!", id, auth.getName());
         comuniService.findByIdAndDelete(id);
         log.info("Comune ID {} eliminato definitivamente", id);
+    }
+
+    //endpoint per trovare una lista comuni in base all idProvincia
+    @GetMapping
+    public Page<Comune> getComuniByIdProvincia(@RequestParam Long idProvincia, @PageableDefault(page = 0, size = 10) Pageable pageable) {
+
+        return this.comuniService.getListByProvincia(idProvincia, pageable);
     }
 }

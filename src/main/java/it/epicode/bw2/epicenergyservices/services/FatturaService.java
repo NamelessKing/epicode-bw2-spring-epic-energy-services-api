@@ -118,9 +118,27 @@ public class FatturaService {
             result = fatturaRepository.findByAnno(anno, pageable);
         } else if (min != null && max != null) {
             result = fatturaRepository.findByImportoBetween(BigDecimal.valueOf(min), BigDecimal.valueOf(max), pageable);
+        } else if (result == null) {
+            result = this.fatturaRepository.findAll(pageable);
         }
 
         return result.map(this::toResponseDTO);
+    }
+
+
+    public Fattura getFatturaByid(Long idfattura) {
+
+        Fattura found = fatturaRepository.findFatturaById(idfattura);
+        if (found == null) throw new NotFoundException("Fattura non trovata");
+
+        return found;
+    }
+
+
+    public Page<Fattura> getFatture(Pageable pageable) {
+
+
+        return this.fatturaRepository.findAll(pageable);
     }
 
 }
