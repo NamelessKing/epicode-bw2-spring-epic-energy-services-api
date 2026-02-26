@@ -104,7 +104,6 @@ public class UtentiController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Visualizza tutti gli utenti (ADMIN only)")
-    public Page<Utente> getAllUtenti(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "5") int size,
                                      @RequestParam(defaultValue = "username") String orderBy) {
         return this.utentiService.findAll(page, size, orderBy);
@@ -121,11 +120,10 @@ public class UtentiController {
 
     ;
 
+    //visualizza proprio profilo ---------
     @GetMapping("/me")
     @Operation(summary = "Visualizza proprio profilo")
-    public Utente getAllUtenti(@AuthenticationPrincipal Utente utenteCorrente, @RequestParam(defaultValue = "0") int page,
-                               @RequestParam(defaultValue = "5") int size,
-                               @RequestParam(defaultValue = "username") String orderBy) {
+    public Utente getMyProfile(@AuthenticationPrincipal Utente utenteCorrente) {
         return this.utentiService.findById(utenteCorrente.getId());
     }
 
