@@ -104,8 +104,9 @@ public class UtentiController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Visualizza tutti gli utenti (ADMIN only)")
-                                     @RequestParam(defaultValue = "5") int size,
-                                     @RequestParam(defaultValue = "username") String orderBy) {
+    public Page<Utente> getAllProfiles(@RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "5") int size,
+                                       @RequestParam(defaultValue = "username") String orderBy) {
         return this.utentiService.findAll(page, size, orderBy);
     }
 
