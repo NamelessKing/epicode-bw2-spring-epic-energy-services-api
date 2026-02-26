@@ -16,6 +16,7 @@ import it.epicode.bw2.epicenergyservices.dto.response.ClienteResponseDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteListItemDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteSearchDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
+import it.epicode.bw2.epicenergyservices.entities.TipoAzienda;
 import it.epicode.bw2.epicenergyservices.services.ClienteService;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +24,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -58,8 +61,8 @@ public class ClienteController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @Operation(
-            summary = "Lista clienti",
-            description = "USER/ADMIN: Recupera lista paginata di clienti attivi per visualizzazione in tabella"
+            summary = "Lista clienti con filtri",
+            description = "USER/ADMIN: Recupera lista paginata di clienti attivi con filtri dinamici (nome, fatturato, date, provincia, tipo)"
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Lista recuperata"),
@@ -72,8 +75,35 @@ public class ClienteController {
             @Parameter(description = "Elementi per pagina (max 100)", example = "10")
             @RequestParam(defaultValue = "10") int size,
 
-            @Parameter(description = "Ordinamento: campo,direzione (es: ragioneSociale,asc)", example = "ragioneSociale,asc")
-            @RequestParam(defaultValue = "ragioneSociale,asc") String sort
+            @Parameter(description = "Ordinamento: campo,direzione", example = "ragioneSociale,asc")
+            @RequestParam(defaultValue = "ragioneSociale,asc") String sort,
+
+            @Parameter(description = "Filtra per nome (case-insensitive)", example = "Acme")
+            @RequestParam(required = false) String nome,
+
+            @Parameter(description = "Fatturato minimo", example = "50000")
+            @RequestParam(required = false) Double fatturatoMin,
+
+            @Parameter(description = "Fatturato massimo", example = "200000")
+            @RequestParam(required = false) Double fatturatoMax,
+
+            @Parameter(description = "Data inserimento da (formato: yyyy-MM-dd)", example = "2024-01-01")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInserimentoDa,
+
+            @Parameter(description = "Data inserimento a (formato: yyyy-MM-dd)", example = "2024-12-31")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInserimentoA,
+
+            @Parameter(description = "Data ultimo contatto da (formato: yyyy-MM-dd)", example = "2024-01-01")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataContattoDa,
+
+            @Parameter(description = "Data ultimo contatto a (formato: yyyy-MM-dd)", example = "2024-12-31")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataContattoA,
+
+            @Parameter(description = "ID provincia sede legale", example = "58")
+            @RequestParam(required = false) Long provinciaId,
+
+            @Parameter(description = "Tipo azienda (SPA, SRL, SAS, SNC, PA, ASL)", example = "SRL")
+            @RequestParam(required = false) TipoAzienda tipoAzienda
     ) {
         int safePage = Math.max(0, page);
         int safeSize = size <= 0 || size > 100 ? 20 : size;
@@ -88,7 +118,18 @@ public class ClienteController {
                 "desc".equalsIgnoreCase(sortDir) ? Sort.by(sortField).descending() : Sort.by(sortField).ascending()
         );
 
-        return clienteService.findAllActive(pageable);
+        return clienteService.findAllActiveWithFilters(
+                pageable,
+                nome,
+                fatturatoMin,
+                fatturatoMax,
+                dataInserimentoDa,
+                dataInserimentoA,
+                dataContattoDa,
+                dataContattoA,
+                provinciaId,
+                tipoAzienda
+        );
     }
 
     @GetMapping("/{id}")

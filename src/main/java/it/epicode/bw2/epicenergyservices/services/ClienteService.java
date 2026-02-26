@@ -9,13 +9,16 @@ import it.epicode.bw2.epicenergyservices.dto.response.ClienteListItemDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteSearchDTO;
 import it.epicode.bw2.epicenergyservices.entities.Cliente;
 import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
+import it.epicode.bw2.epicenergyservices.entities.TipoAzienda;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.ClienteRepository;
+import it.epicode.bw2.epicenergyservices.specifications.ClienteSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -147,8 +150,13 @@ public class ClienteService {
         return toResponseDTO(saved);
     }
 
-    //findById
+    //findById (solo clienti attivi)
     public Cliente findClienteById(Long id) {
+        return clienteRepository.findByIdAndCancellatoFalse(id).orElseThrow(() ->
+                new NotFoundException("cliente con id: " + id + " non trovato."));
+    }
+
+    private Cliente findClienteByIdIncludingDeleted(Long id) {
         return clienteRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("cliente con id: " + id + " non trovato."));
     }
@@ -156,6 +164,38 @@ public class ClienteService {
     //findAll (paginato, clienti attivi)
     public Page<ClienteListItemDTO> findAllActive(Pageable pageable) {
         Page<Cliente> clienti = clienteRepository.findByCancellatoFalse(pageable);
+        List<ClienteListItemDTO> dtos = clienti.getContent().stream()
+                .map(this::toListItemDTO)
+                .toList();
+        return new PageImpl<>(dtos, pageable, clienti.getTotalElements());
+    }
+
+    //findAll con filtri (paginato, clienti attivi)
+    public Page<ClienteListItemDTO> findAllActiveWithFilters(
+            Pageable pageable,
+            String nome,
+            Double fatturatoMin,
+            Double fatturatoMax,
+            LocalDate dataInserimentoDa,
+            LocalDate dataInserimentoA,
+            LocalDate dataContattoDa,
+            LocalDate dataContattoA,
+            Long provinciaId,
+            TipoAzienda tipoAzienda
+    ) {
+        Specification<Cliente> spec = ClienteSpecification.withFilters(
+                nome,
+                fatturatoMin,
+                fatturatoMax,
+                dataInserimentoDa,
+                dataInserimentoA,
+                dataContattoDa,
+                dataContattoA,
+                provinciaId,
+                tipoAzienda
+        );
+
+        Page<Cliente> clienti = clienteRepository.findAll(spec, pageable);
         List<ClienteListItemDTO> dtos = clienti.getContent().stream()
                 .map(this::toListItemDTO)
                 .toList();
@@ -244,7 +284,7 @@ public class ClienteService {
 
     //restore (RIATTIVA CLIENTE CANCELLATO)
     public ClienteResponseDTO restoreCliente(Long id) {
-        Cliente cliente = findClienteById(id);
+        Cliente cliente = findClienteByIdIncludingDeleted(id);
         cliente.setCancellato(false);
         Cliente saved = clienteRepository.save(cliente);
         return toResponseDTO(saved);
