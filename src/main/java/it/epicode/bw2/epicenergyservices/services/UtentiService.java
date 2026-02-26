@@ -7,23 +7,29 @@ import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.RuoliRepository;
 import it.epicode.bw2.epicenergyservices.repositories.UtentiRepository;
+import it.epicode.bw2.epicenergyservices.tools.EmailSender;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class UtentiService {
 
     private final UtentiRepository utentiRepository;
     private final PasswordEncoder passwordEncoder;
     private final RuoliRepository ruoliRepository;
+    private final EmailSender mailgun;
+
 
     @Autowired
-    public UtentiService(UtentiRepository utentiRepository, PasswordEncoder passwordEncoder, RuoliRepository ruoliRepository) {
+    public UtentiService(UtentiRepository utentiRepository, PasswordEncoder passwordEncoder, RuoliRepository ruoliRepository, EmailSender mailgun) {
         this.utentiRepository = utentiRepository;
         this.passwordEncoder = passwordEncoder;
         this.ruoliRepository = ruoliRepository;
+        this.mailgun = mailgun;
     }
 
     public Utente findById(long id) {
@@ -61,9 +67,13 @@ public class UtentiService {
 
         // 7 Salva l'utente con il ruolo assegnato
         this.utentiRepository.save(utenteSalvato);
-        
-        System.out.println("Utente registrato: " + utenteSalvato.getUsername() + " con ruolo: " + ruolo);
 
+        System.out.println("Utente registrato: " + utenteSalvato.getUsername() + " con ruolo: " + ruolo);
+        try {
+            this.mailgun.sendRegistration(utenteSalvato);
+        } catch (Exception ex) {
+            log.error("Errore nell'invio della mail");
+        }
         return utenteSalvato;
     }
 
@@ -82,14 +92,14 @@ public class UtentiService {
     public Utente addRuoloUtente(Long idUtente, Long idRuolo) {
         Utente utenteFound = this.utentiRepository.findById(idUtente)
                 .orElseThrow(() -> new NotFoundException("Utente non trovato"));
-        
+
         Ruolo ruoloFound = this.ruoliRepository.findById(idRuolo)
                 .orElseThrow(() -> new NotFoundException("Ruolo non trovato"));
 
         // Controlla che l'utente non abbia già questo ruolo
         boolean alreadyHasRole = utenteFound.getRuoliList().stream()
                 .anyMatch(r -> r.getId() == idRuolo);
-        
+
         if (alreadyHasRole) {
             throw new BadRequestException("Utente ha già questo ruolo");
         }

@@ -2,7 +2,6 @@ package it.epicode.bw2.epicenergyservices.controllers;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import it.epicode.bw2.epicenergyservices.dto.request.ClienteDTO;
-import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteResponseDTO;
 import it.epicode.bw2.epicenergyservices.entities.Cliente;
 import it.epicode.bw2.epicenergyservices.services.ClienteService;
