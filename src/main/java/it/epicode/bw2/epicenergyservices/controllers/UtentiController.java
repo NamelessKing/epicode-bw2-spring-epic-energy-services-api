@@ -8,11 +8,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.epicode.bw2.epicenergyservices.dto.request.AddRuoloUtentiDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.RegisterDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiAdminDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiUserDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsWithListDTO;
 import it.epicode.bw2.epicenergyservices.entities.Utente;
+import it.epicode.bw2.epicenergyservices.exceptions.ValidationException;
 import it.epicode.bw2.epicenergyservices.services.RuoliService;
 import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import jakarta.validation.Valid;
@@ -22,9 +24,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/utenti")
@@ -86,13 +92,13 @@ public class UtentiController {
     @Operation(summary = "Visualizza tutti gli utenti (ADMIN only)")
     public Page<Utente> getAllUtenti(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "5") int size,
-                                     @RequestParam(defaultValue = "surname") String orderBy) {
+                                     @RequestParam(defaultValue = "username") String orderBy) {
         return this.utentiService.findAll(page, size, orderBy);
     }
 
     ;
 
-    @GetMapping("/${utenteId}")
+    @GetMapping("/{utenteId}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Visualizza un utente (ADMIN only)")
     public Utente getUtente(@PathVariable Long utenteId) {
@@ -105,11 +111,29 @@ public class UtentiController {
     @Operation(summary = "Visualizza proprio profilo")
     public Utente getAllUtenti(@AuthenticationPrincipal Utente utenteCorrente, @RequestParam(defaultValue = "0") int page,
                                @RequestParam(defaultValue = "5") int size,
-                               @RequestParam(defaultValue = "surname") String orderBy) {
+                               @RequestParam(defaultValue = "username") String orderBy) {
         return this.utentiService.findById(utenteCorrente.getId());
     }
 
-    ;
+    // ADD RUOLO UTENTE---------------------
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Aggiunge nuovo utente (ADMIN only)")
+    public Utente addUser(@RequestBody @Valid RegisterDTO payload,
+                          BindingResult validationResult) {
+        // Gestisci errori di validazione
+        if (validationResult.hasErrors()) {
+            List<String> errors = validationResult.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            throw new ValidationException(errors);
+        }
+
+        // Se validazione OK, registra l'utente
+        Utente saved = this.utentiService.addUtente(payload, "USER");
+        return saved;
+    }
 
     //update profilo da user
     @PatchMapping("/me/update")
@@ -119,7 +143,7 @@ public class UtentiController {
     }
 
     //update profilo da admin
-    @PutMapping("/${utenteId}/update")
+    @PutMapping("/{utenteId}/update")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Modifica un utente (ADMIN only)")
     public Utente updateUtenteProfile(@PathVariable Long utenteId, @RequestBody @Validated UpdateUtentiAdminDTO payload) {
@@ -133,4 +157,6 @@ public class UtentiController {
 
         return this.utentiService.uploadAvatar(file, utenteCorrente.getId());
     }
+
+    
 }
