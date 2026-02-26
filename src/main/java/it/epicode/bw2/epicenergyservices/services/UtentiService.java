@@ -21,7 +21,6 @@ public class UtentiService {
     private final UtentiRepository utentiRepository;
     private final PasswordEncoder passwordEncoder;
     private final RuoliRepository ruoliRepository;
-    private final EmailSender mailgun;
 
 
     @Autowired
@@ -29,7 +28,6 @@ public class UtentiService {
         this.utentiRepository = utentiRepository;
         this.passwordEncoder = passwordEncoder;
         this.ruoliRepository = ruoliRepository;
-        this.mailgun = mailgun;
     }
 
     public Utente findById(long id) {
@@ -69,11 +67,7 @@ public class UtentiService {
         this.utentiRepository.save(utenteSalvato);
 
         System.out.println("Utente registrato: " + utenteSalvato.getUsername() + " con ruolo: " + ruolo);
-        try {
-            this.mailgun.sendRegistration(utenteSalvato);
-        } catch (Exception ex) {
-            log.error("Errore nell'invio della mail");
-        }
+
         return utenteSalvato;
     }
 

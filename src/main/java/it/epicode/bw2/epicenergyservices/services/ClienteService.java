@@ -23,14 +23,16 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final ProvinceService provinceService;
     private final ComuniService comuniService;
+    private final EmailSender mailgun;
 
 
     @Autowired
-    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository, ProvinceService provinceService, ComuniService comuniService, EmailSender mailgun) {
+    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository, ProvinceService provinceService, ComuniService comuniService, EmailSender mailgun, EmailSender mailgun1) {
         this.indirizziService = indirizziService;
         this.clienteRepository = clienteRepository;
         this.provinceService = provinceService;
         this.comuniService = comuniService;
+        this.mailgun = mailgun1;
     }
 
     public ClienteResponseDTO toResponseDTO(Cliente cliente) {
@@ -89,7 +91,11 @@ public class ClienteService {
 
 
         Cliente saved = clienteRepository.save(cliente);// TODO: INVIARE EMAIL DI BENVENUTO
-
+        try {
+            this.mailgun.sendRegistration(saved);
+        } catch (Exception ex) {
+            log.error("Errore nell'invio della mail");
+        }
         return toResponseDTO(saved);
     }
 
