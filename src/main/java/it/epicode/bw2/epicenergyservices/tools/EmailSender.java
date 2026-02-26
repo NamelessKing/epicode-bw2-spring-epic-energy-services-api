@@ -20,25 +20,25 @@ public class EmailSender {
         this.apiKey = apiKey;
     }
 
-//    public void sendRegistration(Utente recipient) {
-//        HttpResponse<JsonNode> response = Unirest.post("https://api.mailgun.net/v3/" + this.domain + "/messages")
-//                .basicAuth("api", apiKey)
-//                .queryString("from", "Team 5 <team5@gmail.com>")
-//                .queryString("to", recipient.getEmail())
-//                .queryString("subject", "Benvenuto sulla piattaforma")
-//                .queryString("text", "Ciao " + recipient.getFirstName() + ", la tua registrazione è andata a buon fine")
-//                .asJson();
-
     public void sendRegistration(Utente recipient) {
         HttpResponse<JsonNode> response = Unirest.post("https://api.mailgun.net/v3/" + this.domain + "/messages")
                 .basicAuth("api", apiKey)
-                .queryString("from", "Team 5 <postmaster@" + this.domain + ">")
+                .queryString("from", "Team 5 <team5@gmail.com>")
                 .queryString("to", recipient.getEmail())
                 .queryString("subject", "Benvenuto sulla piattaforma")
                 .queryString("text", "Ciao " + recipient.getFirstName() + ", la tua registrazione è andata a buon fine")
                 .asJson();
-        System.out.println("Status: " + response.getStatus());
-        System.out.println("Body: " + response.getBody());
+//
+//    public void sendRegistration(Utente recipient) {
+//        HttpResponse<JsonNode> response = Unirest.post("https://api.mailgun.net/v3/" + this.domain + "/messages")
+//                .basicAuth("api", apiKey)
+//                .queryString("from", "Team 5 <postmaster@" + this.domain + ">")
+//                .queryString("to", recipient.getEmail())
+//                .queryString("subject", "Benvenuto sulla piattaforma")
+//                .queryString("text", "Ciao " + recipient.getFirstName() + ", la tua registrazione è andata a buon fine")
+//                .asJson();
+//        System.out.println("Status: " + response.getStatus());
+//        System.out.println("Body: " + response.getBody());
     }
 }
 

@@ -37,6 +37,7 @@ public class FatturaController {
 
     //endpoint per modificare una fattura(data e importo)
 
+    //http://localhost:8080/fatture?stato=EMESSA
 
     //endpoint per modificare lo stato una fattura
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")

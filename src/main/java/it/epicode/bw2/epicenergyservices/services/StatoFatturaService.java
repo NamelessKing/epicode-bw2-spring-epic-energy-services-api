@@ -37,14 +37,14 @@ public class StatoFatturaService {
     }
 
     //find by id
-    public StatoFattura findById(Long idStato) {
-        StatoFattura stato = statoFatturaRepository.findByIdStato(idStato);
+    public StatoFattura findById(long idStato) {
+        StatoFattura stato = statoFatturaRepository.findById(idStato);
 
         if (stato == null) throw new NotFoundException("Stato fattura inesistente.");
         return stato;
     }
 
-    //
+
     public boolean existByStato(String stato) {
 
         return statoFatturaRepository.existsByStato(stato);
