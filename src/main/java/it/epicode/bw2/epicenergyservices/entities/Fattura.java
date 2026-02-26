@@ -2,6 +2,8 @@ package it.epicode.bw2.epicenergyservices.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
@@ -22,7 +24,8 @@ public class Fattura {
     private double importo;
 
     @Column(nullable = false, unique = true)
-    @NotBlank(message = "Il numero della fattura è obbligatorio")
+    @NotNull
+    @Positive
     private long numero;
 
     //Relazione ManyToOne con id_cliente

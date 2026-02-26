@@ -26,7 +26,7 @@ public class FatturaController {
         this.fatturaService = fatturaService;
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{idCliente}")
     public Fattura saveFattura(@RequestBody @Validated FatturaDTO payload,
                                @PathVariable long idCliente,
@@ -40,14 +40,14 @@ public class FatturaController {
     //http://localhost:8080/fatture?stato=EMESSA
 
     //endpoint per modificare lo stato una fattura
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
     public Page<ResponseFatturaDTO> filtraFatture(
             @RequestParam(required = false) Long idCliente,
             @RequestParam(required = false) String stato,
             @RequestParam(required = false) Integer anno,
-            @RequestParam(required = false) double min,
-            @RequestParam(required = false) double max,
+            @RequestParam(required = false) Double min,
+            @RequestParam(required = false) Double max,
             @PageableDefault(page = 0, size = 10)
             Pageable pageable
     ) {
