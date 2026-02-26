@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 public class ErrorsHandler {
-    
+
     /**
      * 400 - Validation Exception (con lista errori dettagliati)
      * Gestisce ValidationException personalizzata con lista di errori
@@ -26,13 +26,13 @@ public class ErrorsHandler {
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorsWithListDTO> handleValidationException(ValidationException ex) {
         ErrorsWithListDTO response = new ErrorsWithListDTO(
-            ex.getMessage(),
-            LocalDateTime.now(),
-            ex.getErrors()
+                ex.getMessage(),
+                LocalDateTime.now(),
+                ex.getErrors()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
-    
+
     /**
      * 400 - Spring Validation Error (MethodArgumentNotValidException)
      * Gestisce errori di validazione Bean Validation (@Valid)
@@ -40,20 +40,20 @@ public class ErrorsHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorsWithListDTO> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex) {
-        
+
         BindingResult bindingResult = ex.getBindingResult();
         var errors = bindingResult.getAllErrors().stream()
-            .map(error -> error.getDefaultMessage())
-            .collect(Collectors.toList());
-        
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.toList());
+
         ErrorsWithListDTO response = new ErrorsWithListDTO(
-            "Errori di validazione",
-            LocalDateTime.now(),
-            errors
+                "Errori di validazione",
+                LocalDateTime.now(),
+                errors
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
-    
+
     /**
      * 400 - Bad Request Exception
      * Gestisce richieste con dati invalidi
@@ -61,12 +61,12 @@ public class ErrorsHandler {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorsDTO> handleBadRequest(BadRequestException ex) {
         ErrorsDTO response = new ErrorsDTO(
-            ex.getMessage(),
-            LocalDateTime.now()
+                ex.getMessage(),
+                LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
-    
+
     /**
      * 401 - Unauthorized Exception
      * Gestisce credenziali errate, token mancante/scaduto
@@ -74,12 +74,12 @@ public class ErrorsHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorsDTO> handleUnauthorized(UnauthorizedException ex) {
         ErrorsDTO response = new ErrorsDTO(
-            ex.getMessage(),
-            LocalDateTime.now()
+                ex.getMessage(),
+                LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
-    
+
     /**
      * 403 - Authorization Denied Exception
      * Gestisce accesso negato per permessi insufficienti
@@ -87,12 +87,12 @@ public class ErrorsHandler {
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorsDTO> handleForbidden(AuthorizationDeniedException ex) {
         ErrorsDTO response = new ErrorsDTO(
-            ex.getMessage(),
-            LocalDateTime.now()
+                ex.getMessage(),
+                LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
-    
+
     /**
      * 404 - Not Found Exception
      * Gestisce risorsa non trovata nel database
@@ -100,12 +100,12 @@ public class ErrorsHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorsDTO> handleNotFound(NotFoundException ex) {
         ErrorsDTO response = new ErrorsDTO(
-            ex.getMessage(),
-            LocalDateTime.now()
+                ex.getMessage(),
+                LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
-    
+
     /**
      * 409 - Conflict Exception
      * Gestisce conflitti (duplicate entry, race condition, etc)
@@ -113,12 +113,12 @@ public class ErrorsHandler {
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorsDTO> handleConflict(ConflictException ex) {
         ErrorsDTO response = new ErrorsDTO(
-            ex.getMessage(),
-            LocalDateTime.now()
+                ex.getMessage(),
+                LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
-    
+
     /**
      * 500 - Generic Exception
      * Fallback per eccezioni non gestite
@@ -127,11 +127,27 @@ public class ErrorsHandler {
     public ResponseEntity<ErrorsDTO> handleGenericException(Exception ex) {
         // Log per debugging (importante!)
         ex.printStackTrace();
-        
+
         ErrorsDTO response = new ErrorsDTO(
-            "C'è stato un errore interno! Contatta l'amministratore.",
-            LocalDateTime.now()
+                "C'è stato un errore interno! Contatta l'amministratore.",
+                LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    /**
+     * 400 - Invalid Sort/Pagination
+     * Gestisce errori di sorting o paginazione invalidi
+     */
+    @ExceptionHandler(org.springframework.dao.InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<ErrorsDTO> handleInvalidDataAccess(
+            org.springframework.dao.InvalidDataAccessApiUsageException ex) {
+        String message = "Parametri di paginazione o ordinamento non validi. Usa campi validi: ragioneSociale, email, fatturatoAnnuale, dataInserimento, dataUltimoContatto";
+
+        ErrorsDTO response = new ErrorsDTO(
+                message,
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

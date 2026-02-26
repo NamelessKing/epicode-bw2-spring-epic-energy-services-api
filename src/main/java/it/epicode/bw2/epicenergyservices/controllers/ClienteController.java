@@ -1,22 +1,39 @@
 package it.epicode.bw2.epicenergyservices.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import it.epicode.bw2.epicenergyservices.dto.request.ClienteDTO;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import it.epicode.bw2.epicenergyservices.dto.request.ClienteCreateDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.ClienteUpdateDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.UpdateLogoDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteResponseDTO;
-import it.epicode.bw2.epicenergyservices.entities.Cliente;
+import it.epicode.bw2.epicenergyservices.dto.response.ClienteListItemDTO;
+import it.epicode.bw2.epicenergyservices.dto.response.ClienteSearchDTO;
+import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
 import it.epicode.bw2.epicenergyservices.services.ClienteService;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/clienti")
 @SecurityRequirement(name = "Bearer Authentication")
+@Tag(name = "Clienti", description = "Gestione clienti business - Operazioni CRUD")
 public class ClienteController {
     private final ClienteService clienteService;
 
@@ -25,55 +42,150 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
-    //CREATE
-    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ClienteResponseDTO saveCliente(@RequestBody @Validated ClienteDTO payload) {
-
+    @Operation(summary = "Crea nuovo cliente", description = "USER/ADMIN: Crea un nuovo cliente business nel sistema con dati aziendali, contatto e indirizzi (sede legale e operativa)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Cliente creato con successo"),
+            @ApiResponse(responseCode = "400", description = "Dati non validi", content = @Content(schema = @Schema(implementation = ErrorsDTO.class))),
+            @ApiResponse(responseCode = "409", description = "Cliente già esistente (partita IVA/email duplicata)", content = @Content(schema = @Schema(implementation = ErrorsDTO.class)))
+    })
+    public ClienteResponseDTO saveCliente(@RequestBody @Validated ClienteCreateDTO payload) {
         return this.clienteService.save(payload);
     }
 
-    //GET ALL
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
-    public Page<Cliente> getAllActive(Pageable pageable) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(
+            summary = "Lista clienti",
+            description = "USER/ADMIN: Recupera lista paginata di clienti attivi per visualizzazione in tabella"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista recuperata"),
+            @ApiResponse(responseCode = "401", description = "Token non valido")
+    })
+    public Page<ClienteListItemDTO> getAllActive(
+            @Parameter(description = "Numero pagina (0-based)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "Elementi per pagina (max 100)", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+
+            @Parameter(description = "Ordinamento: campo,direzione (es: ragioneSociale,asc)", example = "ragioneSociale,asc")
+            @RequestParam(defaultValue = "ragioneSociale,asc") String sort
+    ) {
+        int safePage = Math.max(0, page);
+        int safeSize = size <= 0 || size > 100 ? 20 : size;
+
+        String[] sortParts = sort.split(",");
+        String sortField = sortParts[0].trim();
+        String sortDir = sortParts.length > 1 ? sortParts[1].trim() : "asc";
+
+        Pageable pageable = PageRequest.of(
+                safePage,
+                safeSize,
+                "desc".equalsIgnoreCase(sortDir) ? Sort.by(sortField).descending() : Sort.by(sortField).ascending()
+        );
+
         return clienteService.findAllActive(pageable);
     }
 
-    //GET BY ID
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Dettaglio cliente", description = "USER/ADMIN: Visualizza dati completi di un cliente (ragione sociale, indirizzi, contatti) per editing o consultazione dettagliata")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cliente trovato"),
+            @ApiResponse(responseCode = "404", description = "Cliente non trovato", content = @Content(schema = @Schema(implementation = ErrorsDTO.class)))
+    })
     public ClienteResponseDTO getById(@PathVariable Long id) {
         return clienteService.toResponseDTO(clienteService.findClienteById(id));
     }
 
-    //UPDATE COMPLETO
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PutMapping("/{id}")
-//    public ClienteResponseDTO updateCliente(@PathVariable Long id, @RequestBody @Validated ClienteDTO payload) {
-//        return clienteService.updateCliente(id, payload);
-//    }
-
-    //UPDATE CONTATTO
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PatchMapping("/{id}/contatto")
-//    public Cliente updateContatto(@PathVariable Long id, @RequestBody @Validated UpdateContattoDTO payload) {
-//        return clienteService.updateContatto(id, payload);
-//    }
-
-    // PATCH per modificare lo stato attivo di un cliente
-    @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}/disable")
-    public ClienteResponseDTO impostaClienteInattivo(@PathVariable Long id) {
-        Cliente clienteModificato = clienteService.modificaStato(id, false);
-        return clienteService.toResponseDTO(clienteModificato);
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Ricerca clienti", description = "USER/ADMIN: Ricerca rapida clienti per nome (autocomplete). Usato nei form quando bisogna selezionare un cliente per creare fatture")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Risultati ricerca"),
+            @ApiResponse(responseCode = "401", description = "Token non valido")
+    })
+    public List<ClienteSearchDTO> searchClienti(
+            @Parameter(description = "Testo da cercare nel nome cliente", example = "rossi")
+            @RequestParam String q) {
+        return clienteService.searchClienti(q);
     }
 
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}/enable")
-    public ClienteResponseDTO impostaClienteAttivo(@PathVariable Long id) {
-        Cliente clienteModificato = clienteService.modificaStato(id, true);
-        return clienteService.toResponseDTO(clienteModificato);
+    @Operation(summary = "Modifica cliente", description = "ADMIN: Aggiorna dati completi di un cliente (ragione sociale, fatturato, indirizzi, contatto). Solo per amministratori")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cliente aggiornato"),
+            @ApiResponse(responseCode = "404", description = "Cliente non trovato"),
+            @ApiResponse(responseCode = "400", description = "Dati non validi")
+    })
+    public ClienteResponseDTO updateCliente(
+            @PathVariable Long id,
+            @RequestBody @Validated ClienteUpdateDTO payload) {
+        return clienteService.updateCliente(id, payload);
+    }
+
+    @PatchMapping("/{id}/logo")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Aggiorna logo", description = "ADMIN: Modifica il logo aziendale del cliente. Usato per aggiornare il branding quando cambia l'immagine aziendale")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Logo aggiornato"),
+            @ApiResponse(responseCode = "404", description = "Cliente non trovato")
+    })
+    public ClienteResponseDTO updateLogo(
+            @PathVariable Long id,
+            @RequestBody @Validated UpdateLogoDTO payload) {
+        return clienteService.updateLogo(id, payload);
+    }
+
+    @PatchMapping("/{id}/contatto")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Aggiorna contatto", description = "ADMIN: Modifica i dati del contatto principale del cliente (nome, email, telefono)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contatto aggiornato"),
+            @ApiResponse(responseCode = "404", description = "Cliente non trovato")
+    })
+    public ClienteResponseDTO updateContatto(
+            @PathVariable Long id,
+            @RequestBody @Validated UpdateContattoDTO payload) {
+        return clienteService.updateContatto(id, payload);
+    }
+
+    @PatchMapping("/{id}/ultimo-contatto")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Aggiorna data ultimo contatto", description = "ADMIN: Registra il contatto odierno con il cliente. Usato per tracciare le comunicazioni")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Data aggiornata"),
+            @ApiResponse(responseCode = "404", description = "Cliente non trovato")
+    })
+    public ClienteResponseDTO updateUltimoContatto(@PathVariable Long id) {
+        return clienteService.updateUltimoContatto(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Cancella cliente", description = "ADMIN: Soft delete - cancella logicamente un cliente (rimane nel DB con flag cancellato=true)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Cliente cancellato"),
+            @ApiResponse(responseCode = "404", description = "Cliente non trovato")
+    })
+    public void deleteCliente(@PathVariable Long id) {
+        clienteService.deleteCliente(id);
+    }
+
+    @PatchMapping("/{id}/restore")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Riattiva cliente", description = "ADMIN: Riattiva un cliente che era stato cancellato (set cancellato=false). Usato per recuperare cancellazioni accidentali")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cliente riattivato"),
+            @ApiResponse(responseCode = "404", description = "Cliente non trovato")
+    })
+    public ClienteResponseDTO restoreCliente(@PathVariable Long id) {
+        return clienteService.restoreCliente(id);
     }
 }

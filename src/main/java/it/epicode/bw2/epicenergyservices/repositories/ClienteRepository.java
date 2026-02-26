@@ -14,13 +14,13 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     Optional<Cliente> findById(Long id);
 
-    Optional<Cliente> findByEmail(String email);
+    Page<Cliente> findByCancellatoFalse(Pageable pageable);
 
-    Optional<Cliente> findByEmailContatto(String emailContatto);
-
-    Page<Cliente> findByAttivoTrue(Pageable pageable);
+    List<Cliente> findByRagioneSocialeContainsIgnoreCaseAndCancellatoFalse(String ragioneSociale);
 
     boolean existsByEmail(String email);
+
+    boolean existsByEmailContatto(String emailContatto);
 
     boolean existsByPartitaIva(String partitaIva);
 
