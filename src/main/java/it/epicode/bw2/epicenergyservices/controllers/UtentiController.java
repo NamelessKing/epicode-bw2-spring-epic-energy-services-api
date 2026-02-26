@@ -128,8 +128,9 @@ public class UtentiController {
 
     //cambia avatar
     @PatchMapping("/me/avatar")
-    public Utente uploadImage(@RequestParam("avatar_pic") MultipartFile file, @AuthenticationPrincipal Utente utente) {
+    @Operation(summary = "Modifica avatar")
+    public Utente uploadImage(@RequestParam("avatar_pic") MultipartFile file, @AuthenticationPrincipal Utente utenteCorrente) {
 
-        return this.utentiService.uploadAvatar(file, utente.getId());
+        return this.utentiService.uploadAvatar(file, utenteCorrente.getId());
     }
 }
