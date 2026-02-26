@@ -1,7 +1,6 @@
 package it.epicode.bw2.epicenergyservices.dto.request;
 
 import it.epicode.bw2.epicenergyservices.dto.response.IndirizziDTO;
-import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
 import it.epicode.bw2.epicenergyservices.entities.TipoAzienda;
 import jakarta.validation.constraints.*;
 
@@ -18,7 +17,7 @@ public record ClienteDTO(
         @Email(message = "L'indirizzo mail del cliente fornito non è nel formato corretto")
         String email,
 
-        @Positive(message = "Il fatturato annuale deve essere maggiore di zero")
+        @PositiveOrZero(message = "Il fatturato annuale deve essere maggiore o uguale a zero")
         double fatturatoAnnuale,
 
         @NotBlank(message = "La pec del cliente è un campo obbligatorio")
@@ -30,6 +29,9 @@ public record ClienteDTO(
                 message = "Il numero di telefono del cliente non è valido"
         )
         String telefono,
+
+        @Size(max = 500, message = "Il logo aziendale può essere lungo al massimo 500 caratteri")
+        String logoAziendale,
 
         @NotNull(message = "Il tipo di azienda è obbligatorio")
         TipoAzienda tipo,
@@ -46,6 +48,7 @@ public record ClienteDTO(
         @Size(min = 2, max = 30, message = "Il cognome del contatto deve essere tra i 2 e i 30 caratteri")
         String cognomeContatto,
 
+        @NotBlank(message = "Il numero di telefono del contatto è un campo obbligatorio")
         @Pattern(
                 regexp = "^[0-9 +()-]{6,20}$",
                 message = "Il numero di telefono del contatto non è valido"
@@ -53,6 +56,13 @@ public record ClienteDTO(
         String telefonoContatto,
 
         @NotNull
-        IndirizziDTO sedeLegale
+        IndirizziDTO sedeLegale,
+
+        IndirizziDTO sedeOperativa,
+
+        @NotNull(message = "Il comune della sede legale è obbligatorio")
+        Long comuneIdSedeLegale,
+
+        Long comuneIdSedeOperativa
 ) {
 }

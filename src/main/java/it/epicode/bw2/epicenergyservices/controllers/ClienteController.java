@@ -27,11 +27,11 @@ public class ClienteController {
 
     //CREATE
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/{idComune}")
+    @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ClienteResponseDTO saveCliente(@RequestBody @Validated ClienteDTO payload, @PathVariable Long idComune) {
+    public ClienteResponseDTO saveCliente(@RequestBody @Validated ClienteDTO payload) {
 
-        return this.clienteService.save(payload, idComune);
+        return this.clienteService.save(payload);
     }
 
     //GET ALL

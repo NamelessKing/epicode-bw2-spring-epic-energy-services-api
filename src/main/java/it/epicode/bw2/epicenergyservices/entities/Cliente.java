@@ -1,289 +1,255 @@
 package it.epicode.bw2.epicenergyservices.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
-
+import jakarta.validation.constraints.*;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
+/**
+ * Entity che rappresenta un cliente business dell'azienda.
+ * I clienti possono avere fino a due indirizzi: sede legale (obbligatoria) e sede operativa (opzionale).
+ */
 @Entity
 @Table(name = "cliente")
-
 public class Cliente {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(name = "status_cliente")
-    private boolean stato = true;
+    // ==================== SOFT DELETE ====================
+    /**
+     * Flag per soft delete. Se true, il cliente è stato eliminato logicamente.
+     * I clienti cancellati non vengono mostrati nelle liste ma rimangono nel DB.
+     */
+    @Setter
+    @Column(name = "cancellato", nullable = false)
+    private Boolean cancellato = false;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Ragione sociale obbligatoria")
+    // ==================== DATI AZIENDA ====================
+
+    @Setter
+    @Column(nullable = false, length = 255)
+    @NotBlank(message = "La ragione sociale è obbligatoria")
+    @Size(min = 2, max = 255, message = "La ragione sociale deve essere tra 2 e 255 caratteri")
     private String ragioneSociale;
 
-    @Column(nullable = false, unique = true)
-    @NotBlank(message = "Partita iva obbligatoria")
+    @Setter
+    @Column(nullable = false, unique = true, length = 11)
+    @NotBlank(message = "La partita IVA è obbligatoria")
+    @Pattern(regexp = "^[0-9]{11}$", message = "La partita IVA deve essere di 11 cifre numeriche")
     private String partitaIva;
 
+    @Setter
     @Column(nullable = false, unique = true)
-    @NotBlank(message = "Email cliente obbligatoria")
-    @Email(message = "Formato email cliente non valida")
+    @NotBlank(message = "L'email del cliente è obbligatoria")
+    @Email(message = "Formato email non valido")
     private String email;
 
+    @Setter
     @Column(nullable = false)
+    @NotNull(message = "La data di inserimento è obbligatoria")
     private LocalDate dataInserimento;
 
+    @Setter
     @Column(nullable = true)
     private LocalDate dataUltimoContatto;
 
+    @Setter
     @Column(nullable = false)
-    @Positive(message = "Il fatturato annuale deve essere maggiore di zero")
-    private double fatturatoAnnuale;
+    @NotNull(message = "Il fatturato annuale è obbligatorio")
+    @PositiveOrZero(message = "Il fatturato annuale deve essere maggiore o uguale a zero")
+    private Double fatturatoAnnuale;
 
+    @Setter
     @Column(nullable = false, unique = true)
-    @Email(message = "Formato pec non valido")
+    @NotBlank(message = "La PEC è obbligatoria")
+    @Email(message = "Formato PEC non valido")
     private String pec;
 
-    @Column
+    @Setter
+    @Column(length = 20)
+    @Pattern(regexp = "^[0-9 +()-]{6,20}$", message = "Il numero di telefono non è valido")
     private String telefono;
 
-    @Column
+    @Setter
+    @Column(length = 500)
     private String logoAziendale;
 
-    @Column(nullable = false)
+    @Setter
+    @Column(nullable = false, length = 10)
+    @NotNull(message = "Il tipo di azienda è obbligatorio")
     @Enumerated(EnumType.STRING)
     private TipoAzienda tipo;
 
-    @Column(nullable = false, unique = true)
+    // ==================== DATI CONTATTO ====================
+
+    @Setter
+    @Column(nullable = false)
+    @NotBlank(message = "L'email del contatto è obbligatoria")
     @Email(message = "Formato email contatto non valido")
     private String emailContatto;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Nome contatto obbligatorio")
+    @Setter
+    @Column(nullable = false, length = 50)
+    @NotBlank(message = "Il nome del contatto è obbligatorio")
+    @Size(min = 2, max = 50, message = "Il nome del contatto deve essere tra 2 e 50 caratteri")
     private String nomeContatto;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Cognome contatto obbligatorio")
+    @Setter
+    @Column(nullable = false, length = 50)
+    @NotBlank(message = "Il cognome del contatto è obbligatorio")
+    @Size(min = 2, max = 50, message = "Il cognome del contatto deve essere tra 2 e 50 caratteri")
     private String cognomeContatto;
 
-    @Column(nullable = false)
-    @NotBlank(message = "Telefono contatto obbligatorio")
+    @Setter
+    @Column(nullable = false, length = 20)
+    @NotBlank(message = "Il telefono del contatto è obbligatorio")
+    @Pattern(regexp = "^[0-9 +()-]{6,20}$", message = "Il numero di telefono del contatto non è valido")
     private String telefonoContatto;
 
-    //relazione OneToOne con id_sede_legale
-    @OneToOne
+    // ==================== RELAZIONI ====================
+
+    /**
+     * Sede legale del cliente (OBBLIGATORIA)
+     */
+    @Setter
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_sede_legale", nullable = false)
+    @NotNull(message = "La sede legale è obbligatoria")
     private Indirizzo indirizzoSedeLegale;
 
-    //relazione OneToOne con id_sede_operativa
-    @OneToOne
-    @JoinColumn(name = "id_sede_operativa")
+    /**
+     * Sede operativa del cliente (OPZIONALE)
+     */
+    @Setter
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_sede_operativa", nullable = true)
     private Indirizzo indirizzoSedeOperativa;
+
+    // ==================== COSTRUTTORI ====================
 
     public Cliente() {
     }
 
-
-    public Cliente(String ragioneSociale,
-                   String partitaIva,
-                   String email,
-                   double fatturatoAnnuale,
-                   String pec,
-                   String telefono,
-                   TipoAzienda tipo,
-                   String emailContatto,
-                   String nomeContatto,
-                   String cognomeContatto,
-                   String telefonoContatto,
-                   Indirizzo sedeLegale
+    /**
+     * Costruttore completo per la creazione di un nuovo cliente
+     */
+    public Cliente(
+            String ragioneSociale,
+            String partitaIva,
+            String email,
+            Double fatturatoAnnuale,
+            String pec,
+            String telefono,
+            String logoAziendale,
+            TipoAzienda tipo,
+            String emailContatto,
+            String nomeContatto,
+            String cognomeContatto,
+            String telefonoContatto,
+            Indirizzo sedeLegale,
+            Indirizzo sedeOperativa
     ) {
         this.ragioneSociale = ragioneSociale;
         this.partitaIva = partitaIva;
         this.email = email;
-        this.dataInserimento = LocalDate.now();
-        this.dataUltimoContatto = LocalDate.now();
+        this.dataInserimento = LocalDate.now(); // Auto-generato alla creazione
+        this.dataUltimoContatto = null; // Inizialmente null, verrà aggiornato al primo contatto
         this.fatturatoAnnuale = fatturatoAnnuale;
         this.pec = pec;
         this.telefono = telefono;
-        this.logoAziendale = "https://placebear.com/200/200";
+        this.logoAziendale = logoAziendale;
         this.tipo = tipo;
         this.emailContatto = emailContatto;
         this.nomeContatto = nomeContatto;
         this.cognomeContatto = cognomeContatto;
         this.telefonoContatto = telefonoContatto;
         this.indirizzoSedeLegale = sedeLegale;
-
+        this.indirizzoSedeOperativa = sedeOperativa;
+        this.cancellato = false; // Di default il cliente è attivo
     }
 
+    // ==================== GETTERS E SETTERS ====================
 
-//    public Cliente(
-//            String ragioneSociale,
-//            String partitaIva,
-//            String email,
-//            double fatturatoAnnuale,
-//            String pec,
-//            String telefono,
-//            TipoAzienda tipo,
-//            LocalDate dataInserimento,
-//            String emailContatto,
-//            String nomeContatto,
-//            String cognomeContatto,
-//            String telefonoContatto
-//    ) {
-//        this.ragioneSociale = ragioneSociale;
-//        this.partitaIva = partitaIva;
-//        this.email = email;
-//        this.fatturatoAnnuale = fatturatoAnnuale;
-//        this.pec = pec;
-//        this.telefono = telefono;
-//        this.tipo = tipo;
-//        this.dataInserimento = dataInserimento;
-//        this.emailContatto = emailContatto;
-//        this.nomeContatto = nomeContatto;
-//        this.cognomeContatto = cognomeContatto;
-//        this.telefonoContatto = telefonoContatto;
-//    }
+    public Long getId() {
+        return id;
+    }
 
+    public Boolean getCancellato() {
+        return cancellato;
+    }
+
+    /**
+     * Helper method per verificare se il cliente è attivo (non cancellato)
+     */
+    public boolean isAttivo() {
+        return !cancellato;
+    }
 
     public String getRagioneSociale() {
         return ragioneSociale;
-    }
-
-    public void setRagioneSociale(String ragioneSociale) {
-        this.ragioneSociale = ragioneSociale;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public String getPartitaIva() {
         return partitaIva;
     }
 
-    public void setPartitaIva(String partitaIva) {
-        this.partitaIva = partitaIva;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public LocalDate getDataInserimento() {
         return dataInserimento;
     }
 
-    public void setDataInserimento(LocalDate dataInserimento) {
-        this.dataInserimento = dataInserimento;
-    }
-
     public LocalDate getDataUltimoContatto() {
         return dataUltimoContatto;
     }
 
-    public void setDataUltimoContatto(LocalDate dataUltimoContatto) {
-        this.dataUltimoContatto = dataUltimoContatto;
-    }
-
-    public double getFatturatoAnnuale() {
+    public Double getFatturatoAnnuale() {
         return fatturatoAnnuale;
-    }
-
-    public void setFatturatoAnnuale(double fatturatoAnnuale) {
-        this.fatturatoAnnuale = fatturatoAnnuale;
     }
 
     public String getPec() {
         return pec;
     }
 
-    public void setPec(String pec) {
-        this.pec = pec;
-    }
-
     public String getTelefono() {
         return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
     }
 
     public String getLogoAziendale() {
         return logoAziendale;
     }
 
-    public void setLogoAziendale(String logoAziendale) {
-        this.logoAziendale = logoAziendale;
-    }
-
     public TipoAzienda getTipo() {
         return tipo;
-    }
-
-    public void setTipo(TipoAzienda tipo) {
-        this.tipo = tipo;
     }
 
     public String getEmailContatto() {
         return emailContatto;
     }
 
-    public void setEmailContatto(String emailContatto) {
-        this.emailContatto = emailContatto;
-    }
-
     public String getNomeContatto() {
         return nomeContatto;
-    }
-
-    public void setNomeContatto(String nomeContatto) {
-        this.nomeContatto = nomeContatto;
     }
 
     public String getCognomeContatto() {
         return cognomeContatto;
     }
 
-    public void setCognomeContatto(String cognomeContatto) {
-        this.cognomeContatto = cognomeContatto;
-    }
-
     public String getTelefonoContatto() {
         return telefonoContatto;
-    }
-
-    public void setTelefonoContatto(String telefonoContatto) {
-        this.telefonoContatto = telefonoContatto;
     }
 
     public Indirizzo getIndirizzoSedeLegale() {
         return indirizzoSedeLegale;
     }
 
-    public void setIndirizzoSedeLegale(Indirizzo indirizzoSedeLegale) {
-        this.indirizzoSedeLegale = indirizzoSedeLegale;
-    }
-
     public Indirizzo getIndirizzoSedeOperativa() {
         return indirizzoSedeOperativa;
     }
 
-    public void setIndirizzoSedeOperativa(Indirizzo indirizzoSedeOperativa) {
-        this.indirizzoSedeOperativa = indirizzoSedeOperativa;
-    }
-
-    public boolean isAttivo() {
-        return stato;
-    }
-
-    public void setStato(boolean stato) {
-        this.stato = stato;
-    }
 }

@@ -59,7 +59,7 @@ public class ClienteService {
 
 
     //save
-    public ClienteResponseDTO save(ClienteDTO payload, Long idComune) {
+    public ClienteResponseDTO save(ClienteDTO payload) {
 
         if (clienteRepository.existsByEmail(payload.email()) || clienteRepository.existsByEmail(payload.emailContatto())) {
             throw new BadRequestException("Email cliente o contatto gia in uso");
@@ -70,7 +70,11 @@ public class ClienteService {
             throw new BadRequestException("Esiste gia un cliente con questa partita iva.");
         }
 
-        Indirizzo indirizzoCliente = indirizziService.save(payload.sedeLegale(), idComune);
+        Indirizzo indirizzoCliente = indirizziService.save(payload.sedeLegale(), payload.comuneIdSedeLegale());
+        Indirizzo indirizzoOperativa = null;
+        if (payload.sedeOperativa() != null && payload.comuneIdSedeOperativa() != null) {
+            indirizzoOperativa = indirizziService.save(payload.sedeOperativa(), payload.comuneIdSedeOperativa());
+        }
 
         Cliente cliente = new Cliente(
                 payload.ragioneSociale(),
@@ -79,12 +83,14 @@ public class ClienteService {
                 payload.fatturatoAnnuale(),
                 payload.pec(),
                 payload.telefono(),
+                payload.logoAziendale(),
                 payload.tipo(),
                 payload.emailContatto(),
                 payload.nomeContatto(),
                 payload.cognomeContatto(),
                 payload.telefonoContatto(),
-                indirizzoCliente
+                indirizzoCliente,
+                indirizzoOperativa
         );
 
 
