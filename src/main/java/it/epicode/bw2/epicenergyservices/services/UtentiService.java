@@ -199,4 +199,25 @@ public class UtentiService {
     public boolean existByEmail(String email) {
         return this.utentiRepository.existsByEmail(email);
     }
+
+    @Transactional
+    public void removeRuoloUtente(Long idUtente, Long idRuolo) {
+        Utente utenteFound = this.utentiRepository.findById(idUtente)
+                .orElseThrow(() -> new NotFoundException("Utente non trovato"));
+
+        Ruolo ruoloFound = this.ruoliRepository.findById(idRuolo)
+                .orElseThrow(() -> new NotFoundException("Ruolo non trovato"));
+
+        // Controlla che l'utente abbia questo ruolo
+        boolean alreadyHasRole = utenteFound.getRuoliList().stream()
+                .anyMatch(r -> r.getId() == idRuolo);
+
+        if (!alreadyHasRole) {
+            throw new BadRequestException("Utente non ha questo ruolo assegnato");
+        }
+
+        utenteFound.getRuoliList().remove(ruoloFound);
+        utentiRepository.save(utenteFound);
+    }
+
 }

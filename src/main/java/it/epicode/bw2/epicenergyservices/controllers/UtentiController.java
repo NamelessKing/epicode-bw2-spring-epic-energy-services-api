@@ -7,8 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import it.epicode.bw2.epicenergyservices.dto.request.AddRuoloUtentiDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.RegisterDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.RuoloUtentiDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiAdminDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiUserDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
@@ -21,6 +21,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,6 +44,8 @@ public class UtentiController {
     private final RuoliService ruoliService;
     private final UtentiService utentiService;
 
+
+    //ASSEGNA RUOLO
     @PatchMapping("/ruoli")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(
@@ -76,9 +79,8 @@ public class UtentiController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
             )
     })
-    public Utente addRuoloUtente(
-            @RequestBody @Valid AddRuoloUtentiDTO payload,
-            Authentication auth
+    public Utente addRuoloUtente(@RequestBody @Valid RuoloUtentiDTO payload,
+                                 Authentication auth
     ) {
         log.info("PATCH /utenti/ruoli - ADMIN '{}' sta assegnando ruolo ID {} a utente ID {}",
                 auth.getName(), payload.idRuolo(), payload.idUtente());
@@ -86,6 +88,18 @@ public class UtentiController {
         log.info("Ruolo assegnato con successo a utente ID {}", payload.idUtente());
         return updated;
     }
+
+
+    //Cancella RUOLO UTENTE
+
+    @DeleteMapping("/ruoli")
+    @Operation(summary = "Cancella ruolo da utente")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteRole(@RequestBody RuoloUtentiDTO payload) {
+        this.utentiService.removeRuoloUtente(payload.idUtente(), payload.idRuolo());
+    }
+
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -115,8 +129,9 @@ public class UtentiController {
         return this.utentiService.findById(utenteCorrente.getId());
     }
 
-    // ADD RUOLO UTENTE---------------------
+    // ADD UTENTE---------------------
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Aggiunge nuovo utente (ADMIN only)")
     public Utente addUser(@RequestBody @Valid RegisterDTO payload,
@@ -134,6 +149,7 @@ public class UtentiController {
         Utente saved = this.utentiService.addUtente(payload, "USER");
         return saved;
     }
+
 
     //update profilo da user
     @PatchMapping("/me/update")
@@ -158,5 +174,5 @@ public class UtentiController {
         return this.utentiService.uploadAvatar(file, utenteCorrente.getId());
     }
 
-    
+
 }
