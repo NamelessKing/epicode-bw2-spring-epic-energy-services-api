@@ -6,6 +6,8 @@ import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.StatoFatturaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,36 +20,61 @@ public class StatoFatturaService {
         this.statoFatturaRepository = statoFatturaRepository;
     }
 
-    //save
-    public StatoFattura save(StatoFatturaDTO payload) {
-        StatoFattura stato = statoFatturaRepository.findByStato(payload.stato());
-        if (stato != null) throw new BadRequestException("Lo stato esiste gia");
-
-        StatoFattura NuovoStato = new StatoFattura(payload.stato());
-
-        return statoFatturaRepository.save(NuovoStato);
+    public StatoFatturaDTO toResponseDTO(StatoFattura statoFattura) {
+        return new StatoFatturaDTO(
+                statoFattura.getStato()
+        );
     }
 
-    //find
+    //save
+    public StatoFattura save(StatoFatturaDTO payload) {
+        if (statoFatturaRepository.existsByStato(payload.stato())) {
+            throw new BadRequestException("Lo stato fattura inserito esiste gia.");
+        }
+
+        StatoFattura nuovoStato = new StatoFattura(payload.stato());
+        return statoFatturaRepository.save(nuovoStato);
+    }
+
+    //find by stato
     public StatoFattura findStato(String stato) {
 
-        StatoFattura statoTrovato = statoFatturaRepository.findByStato(stato);
-        if (statoTrovato == null) throw new NotFoundException("stato non trovato");
-        return statoTrovato;
+        return statoFatturaRepository.findByStato(stato).orElseThrow(() ->
+                new NotFoundException("Stato fattura non trovato."));
+
+
     }
 
     //find by id
     public StatoFattura findById(long idStato) {
-        StatoFattura stato = statoFatturaRepository.findById(idStato);
-
-        if (stato == null) throw new NotFoundException("Stato fattura inesistente.");
-        return stato;
+        return statoFatturaRepository.findById(idStato).orElseThrow(() ->
+                new NotFoundException("Lo stato richiesto non esiste"));
     }
 
+    //get all
+    public Page<StatoFattura> getAllStatiFattura(Pageable pageable) {
+        return statoFatturaRepository.findAll(pageable);
+    }
 
+    //controlla se esiste
     public boolean existByStato(String stato) {
 
         return statoFatturaRepository.existsByStato(stato);
+    }
+
+    //elimina stato fattura
+    public void eliminaStatoFatturaConId(long idStato) {
+        StatoFattura statoDaEliminare = statoFatturaRepository.findById(idStato)
+                .orElseThrow(() -> new NotFoundException("Stato fattura non trovato."));
+
+        statoFatturaRepository.delete(statoDaEliminare);
+    }
+
+    public void eliminaStatoFatturaConNomeStato(String stato) {
+        StatoFattura statoDaEliminare = statoFatturaRepository.findByStato(stato)
+                .orElseThrow(() -> new NotFoundException("Stato fattura non trovato."));
+
+        statoFatturaRepository.delete(statoDaEliminare);
     }
 
 }

@@ -1,6 +1,7 @@
 package it.epicode.bw2.epicenergyservices.controllers;
 
 import it.epicode.bw2.epicenergyservices.dto.request.FatturaDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.StatoFatturaDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateFatturaDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ResponseFatturaDTO;
 import it.epicode.bw2.epicenergyservices.entities.Fattura;
@@ -37,10 +38,17 @@ public class FatturaController {
     }
 
     //endpoint per modificare una fattura(data e importo)
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @PatchMapping("/{idFattura}")
+//    public Fattura updateFattura(@PathVariable long idFattura, @RequestBody UpdateFatturaDTO payload) {
+//        return fatturaService.updateFattura(payload, idFattura);
+//    }
+
+    //endpoint per modificare una lo stato di una fattura
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{idFattura}")
-    public Fattura updateFattura(@PathVariable long idFattura, @RequestBody UpdateFatturaDTO payload) {
-        return fatturaService.updateFattura(payload, idFattura);
+    public Fattura updateStatoFattura(@PathVariable long idFattura, @RequestBody StatoFatturaDTO payload) {
+        return fatturaService.setStatoFattura(idFattura, payload);
     }
 
     //get fattura da id
