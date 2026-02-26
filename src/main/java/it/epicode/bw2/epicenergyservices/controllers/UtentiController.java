@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.epicode.bw2.epicenergyservices.dto.request.AddRuoloUtentiDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiAdminDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiUserDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsWithListDTO;
 import it.epicode.bw2.epicenergyservices.entities.Utente;
@@ -16,9 +18,11 @@ import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -75,6 +79,51 @@ public class UtentiController {
         Utente updated = utentiService.addRuoloUtente(payload.idUtente(), payload.idRuolo());
         log.info("Ruolo assegnato con successo a utente ID {}", payload.idUtente());
         return updated;
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Visualizza tutti gli utenti (ADMIN only)")
+    public Page<Utente> getAllUtenti(@RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "5") int size,
+                                     @RequestParam(defaultValue = "surname") String orderBy) {
+        return this.utentiService.findAll(page, size, orderBy);
+    }
+
+    ;
+
+    @GetMapping("/${utenteId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Visualizza un utente (ADMIN only)")
+    public Utente getUtente(@PathVariable Long utenteId) {
+        return this.utentiService.findById(utenteId);
+    }
+
+    ;
+
+    @GetMapping("/me")
+    @Operation(summary = "Visualizza proprio profilo")
+    public Utente getAllUtenti(@AuthenticationPrincipal Utente utenteCorrente, @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "5") int size,
+                               @RequestParam(defaultValue = "surname") String orderBy) {
+        return this.utentiService.findById(utenteCorrente.getId());
+    }
+
+    ;
+
+    //update profilo da user
+    @PatchMapping("/me/update")
+    @Operation(summary = "Modifica proprio proilo")
+    public Utente updateMyProfile(@AuthenticationPrincipal Utente utenteCorrente, @RequestBody @Validated UpdateUtentiUserDTO payload) {
+        return utentiService.findByIdAndUpdateByUser(payload, utenteCorrente.getId());
+    }
+
+    //update profilo da admin
+    @PutMapping("/${utenteId}/update")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Modifica un utente (ADMIN only)")
+    public Utente updateUtenteProfile(@PathVariable Long utenteId, @RequestBody @Validated UpdateUtentiAdminDTO payload) {
+        return utentiService.findByIdAndUpdateByAdmin(payload, utenteId);
     }
 
     //cambia avatar

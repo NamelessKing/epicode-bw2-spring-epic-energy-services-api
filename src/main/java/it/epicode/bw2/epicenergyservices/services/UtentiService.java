@@ -3,6 +3,8 @@ package it.epicode.bw2.epicenergyservices.services;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import it.epicode.bw2.epicenergyservices.dto.request.RegisterDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiAdminDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiUserDTO;
 import it.epicode.bw2.epicenergyservices.entities.Ruolo;
 import it.epicode.bw2.epicenergyservices.entities.Utente;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
@@ -11,6 +13,10 @@ import it.epicode.bw2.epicenergyservices.repositories.RuoliRepository;
 import it.epicode.bw2.epicenergyservices.repositories.UtentiRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -35,6 +42,16 @@ public class UtentiService {
         this.ruoliRepository = ruoliRepository;
         this.cloudinaryUploader = cloudinaryUploader;
     }
+
+    public Page<Utente> findAll(int page, int size, String orderBy) {
+        if (page < 0) page = 0;
+        if (size > 100 || size < 0) size = 10;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+
+        return this.utentiRepository.findAll(pageable);
+    }
+
 
     public Utente findById(long id) {
         return utentiRepository.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato"));
@@ -77,12 +94,63 @@ public class UtentiService {
         return utenteSalvato;
     }
 
-    public Utente findByUsername(String username) {
-        return this.utentiRepository.findByUsername(username);
-    }
 
     public Utente findByEmail(String email) {
         return this.utentiRepository.findByEmail(email);
+    }
+
+    public Utente findByIdAndUpdateByUser(UpdateUtentiUserDTO payload, Long utenteId) {
+        Utente found = utentiRepository.findById(utenteId).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+
+        //controllo che nuovo username e nuova mail non siano già esistenti:
+        boolean usernameExists = this.utentiRepository.existsByUsername(payload.username());
+        boolean emailExists = this.utentiRepository.existsByEmail(payload.email());
+
+        if (usernameExists && payload.username() != null)
+            throw new BadRequestException("questo username è già utilizzato");
+        if (emailExists && payload.email() != null)
+            throw new BadRequestException("questa email è già associata a un account");
+        Optional.ofNullable(payload.username())
+                .ifPresent(found::setUsername);
+
+        Optional.ofNullable(payload.email())
+                .ifPresent(found::setEmail);
+
+        Optional.ofNullable(payload.password())
+                .ifPresent(found::setPasswordHash);
+        utentiRepository.save(found);
+
+        return found;
+    }
+
+    public Utente findByIdAndUpdateByAdmin(UpdateUtentiAdminDTO payload, Long utenteId) {
+        Utente found = utentiRepository.findById(utenteId).orElseThrow(() -> new NotFoundException("Utente non trovato"));
+
+        //controllo che nuovo username e nuova mail non siano già esistenti:
+        boolean usernameExists = this.utentiRepository.existsByUsername(payload.username());
+        boolean emailExists = this.utentiRepository.existsByEmail(payload.email());
+
+        if (usernameExists && payload.username() != null)
+            throw new BadRequestException("questo username è già utilizzato");
+        if (emailExists && payload.email() != null)
+            throw new BadRequestException("questa email è già associata a un account");
+        // setto solo se not null
+        Optional.ofNullable(payload.username())
+                .ifPresent(found::setUsername);
+
+        Optional.ofNullable(payload.email())
+                .ifPresent(found::setEmail);
+
+        Optional.ofNullable(payload.password())
+                .ifPresent(found::setPasswordHash);
+
+        Optional.ofNullable(payload.firstName())
+                .ifPresent(found::setFirstName);
+
+        Optional.ofNullable(payload.lastName())
+                .ifPresent(found::setLastName);
+        utentiRepository.save(found);
+        return found;
     }
 
     public Utente uploadAvatar(MultipartFile file, Long utenteId) {
