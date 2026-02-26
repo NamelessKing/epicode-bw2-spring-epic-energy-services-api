@@ -4,33 +4,35 @@ import it.epicode.bw2.epicenergyservices.dto.request.ClienteDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteResponseDTO;
 import it.epicode.bw2.epicenergyservices.entities.Cliente;
-import it.epicode.bw2.epicenergyservices.entities.Comune;
 import it.epicode.bw2.epicenergyservices.entities.Indirizzo;
-import it.epicode.bw2.epicenergyservices.entities.Provincia;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.ClienteRepository;
+import it.epicode.bw2.epicenergyservices.tools.EmailSender;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-
 @Service
+@Slf4j
 public class ClienteService {
 
     private final IndirizziService indirizziService;
     private final ClienteRepository clienteRepository;
     private final ProvinceService provinceService;
     private final ComuniService comuniService;
+    private final EmailSender mailgun;
+
 
     @Autowired
-    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository, ProvinceService provinceService, ComuniService comuniService) {
+    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository, ProvinceService provinceService, ComuniService comuniService, EmailSender mailgun, EmailSender mailgun1) {
         this.indirizziService = indirizziService;
         this.clienteRepository = clienteRepository;
         this.provinceService = provinceService;
         this.comuniService = comuniService;
+        this.mailgun = mailgun1;
     }
 
     public ClienteResponseDTO toResponseDTO(Cliente cliente) {
@@ -88,9 +90,13 @@ public class ClienteService {
         );
 
 
-        Cliente saved = clienteRepository.save(cliente);
+        Cliente saved = clienteRepository.save(cliente);// TODO: INVIARE EMAIL DI BENVENUTO
+        try {
+            this.mailgun.sendRegistration(saved);
+        } catch (Exception ex) {
+            log.error("Errore nell'invio della mail");
+        }
         return toResponseDTO(saved);
-        // TODO: INVIARE EMAIL DI BENVENUTO
     }
 
     //findById
@@ -162,7 +168,7 @@ public class ClienteService {
 
     public Cliente modificaStato(Long id, boolean isActive) {
         Cliente cliente = findClienteById(id);
-        
+
 
         cliente.setStato(isActive);
 
