@@ -13,7 +13,8 @@ public record FatturaDTO(
         @Min(0)
         double importo,
 
-        @NotBlank(message = "Il numero della fattura è un campo obbligatorio")
-        long numero
+        @NotNull
+        @Positive
+        Long numero
 ) {
 }

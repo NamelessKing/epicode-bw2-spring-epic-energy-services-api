@@ -3,6 +3,7 @@ package it.epicode.bw2.epicenergyservices.services;
 import it.epicode.bw2.epicenergyservices.dto.request.StatoFatturaDTO;
 import it.epicode.bw2.epicenergyservices.entities.StatoFattura;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
+import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.StatoFatturaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,10 +31,20 @@ public class StatoFatturaService {
     //find
     public StatoFattura findStato(String stato) {
 
-        return statoFatturaRepository.findByStato(stato);
+        StatoFattura statoTrovato = statoFatturaRepository.findByStato(stato);
+        if (statoTrovato == null) throw new NotFoundException("stato non trovato");
+        return statoTrovato;
     }
 
-    //
+    //find by id
+    public StatoFattura findById(long idStato) {
+        StatoFattura stato = statoFatturaRepository.findById(idStato);
+
+        if (stato == null) throw new NotFoundException("Stato fattura inesistente.");
+        return stato;
+    }
+
+
     public boolean existByStato(String stato) {
 
         return statoFatturaRepository.existsByStato(stato);

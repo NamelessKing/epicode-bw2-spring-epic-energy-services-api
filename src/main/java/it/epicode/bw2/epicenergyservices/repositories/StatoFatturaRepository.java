@@ -11,5 +11,7 @@ public interface StatoFatturaRepository extends JpaRepository<StatoFattura, Long
 
     StatoFattura findByStato(String nome);
 
+    StatoFattura findById(long id);
+
     boolean existsByStato(String stato);
 }
