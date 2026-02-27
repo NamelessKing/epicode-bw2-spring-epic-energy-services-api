@@ -14,7 +14,6 @@ import it.epicode.bw2.epicenergyservices.dto.request.UpdateUtentiUserDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsWithListDTO;
 import it.epicode.bw2.epicenergyservices.entities.Utente;
-import it.epicode.bw2.epicenergyservices.exceptions.ValidationException;
 import it.epicode.bw2.epicenergyservices.services.RuoliService;
 import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import jakarta.validation.Valid;
@@ -25,13 +24,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/utenti")
@@ -132,46 +128,52 @@ public class UtentiController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Aggiunge nuovo utente (ADMIN only)")
-    public Utente addUser(@RequestBody @Valid RegisterDTO payload,
-                          BindingResult validationResult) {
-        // Gestisci errori di validazione
-        if (validationResult.hasErrors()) {
-            List<String> errors = validationResult.getFieldErrors()
-                    .stream()
-                    .map(error -> error.getDefaultMessage())
-                    .collect(Collectors.toList());
-            throw new ValidationException(errors);
-        }
-
-        // Se validazione OK, registra l'utente
+    @Operation(summary = "Aggiunge nuovo utente (ADMIN only)", description = "ADMIN: Crea un nuovo utente nel sistema")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Utente creato"),
+            @ApiResponse(responseCode = "400", description = "Dati non validi"),
+            @ApiResponse(responseCode = "403", description = "Solo ADMIN")
+    })
+    public Utente addUser(@RequestBody @Valid RegisterDTO payload) {
+        // La validazione è ora gestita automaticamente da ErrorsHandler
         Utente saved = this.utentiService.addUtente(payload, "USER");
         return saved;
     }
 
 
     //update profilo da user
-    @PatchMapping("/me/update")
-    @Operation(summary = "Modifica proprio proilo")
+    @PatchMapping("/me")
+    @Operation(summary = "Modifica proprio profilo", description = "USER: Aggiorna i propri dati profilo")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Profilo aggiornato"),
+            @ApiResponse(responseCode = "400", description = "Dati non validi")
+    })
     public Utente updateMyProfile(@AuthenticationPrincipal Utente utenteCorrente, @RequestBody @Validated UpdateUtentiUserDTO payload) {
         return utentiService.findByIdAndUpdateByUser(payload, utenteCorrente.getId());
     }
 
     //update profilo da admin
-    @PutMapping("/{utenteId}/update")
+    @PutMapping("/{utenteId}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Modifica un utente (ADMIN only)")
+    @Operation(summary = "Modifica un utente (ADMIN only)", description = "ADMIN: Aggiorna dati completi di un utente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Utente aggiornato"),
+            @ApiResponse(responseCode = "404", description = "Utente non trovato"),
+            @ApiResponse(responseCode = "403", description = "Solo ADMIN")
+    })
     public Utente updateUtenteProfile(@PathVariable Long utenteId, @RequestBody @Validated UpdateUtentiAdminDTO payload) {
         return utentiService.findByIdAndUpdateByAdmin(payload, utenteId);
     }
 
     //cambia avatar
     @PatchMapping("/me/avatar")
-    @Operation(summary = "Modifica avatar")
+    @Operation(summary = "Modifica avatar", description = "USER: Carica nuovo avatar per il proprio profilo")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Avatar aggiornato"),
+            @ApiResponse(responseCode = "400", description = "File non valido")
+    })
     public Utente uploadImage(@RequestParam("avatar_pic") MultipartFile file, @AuthenticationPrincipal Utente utenteCorrente) {
-
         return this.utentiService.uploadAvatar(file, utenteCorrente.getId());
     }
-
 
 }

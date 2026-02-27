@@ -109,57 +109,11 @@ public class IndirizziController {
         return indirizziService.convertToResponseDTO(indirizzo);
     }
 
-//    @PostMapping TODO QUESTO è STATO COMENTATO APPOSTA PERCHè MOLTO PROBABILMENTE POTREBBE NON SERVIRE
-//    @ResponseStatus(HttpStatus.CREATED)
-//    @PreAuthorize("hasAnyRole('ADMIN','USER')")
-//    @Operation(
-//            summary = "Crea nuovo indirizzo (ADMIN only)",
-//            description = "Crea un nuovo indirizzo nel database. Richiede ruolo ADMIN. L'indirizzo deve essere univoco nel comune."
-//    )
-//    @ApiResponses({
-//            @ApiResponse(
-//                    responseCode = "201",
-//                    description = "Indirizzo creato con successo",
-//                    content = @Content(mediaType = "application/json",
-//                            schema = @Schema(implementation = IndirizzoResponseDTO.class))
-//            ),
-//            @ApiResponse(
-//                    responseCode = "400",
-//                    description = "Dati non validi o indirizzo già esistente",
-//                    content = @Content(mediaType = "application/json",
-//                            schema = @Schema(implementation = ErrorsDTO.class))
-//            ),
-//            @ApiResponse(
-//                    responseCode = "422",
-//                    description = "Errori di validazione",
-//                    content = @Content(mediaType = "application/json",
-//                            schema = @Schema(implementation = ErrorsWithListDTO.class))
-//            ),
-//            @ApiResponse(
-//                    responseCode = "403",
-//                    description = "Accesso negato - Solo ADMIN",
-//                    content = @Content(mediaType = "application/json",
-//                            schema = @Schema(implementation = ErrorsDTO.class))
-//            ),
-//            @ApiResponse(
-//                    responseCode = "404",
-//                    description = "Comune non trovato",
-//                    content = @Content(mediaType = "application/json",
-//                            schema = @Schema(implementation = ErrorsDTO.class))
-//            )
-//    })
-//    public IndirizzoResponseDTO create(
-//            @RequestBody @Valid IndirizzoRequestDTO payload,
-//            Authentication auth
-//    ) {
-//        log.info("POST /indirizzi - ADMIN '{}' sta creando indirizzo in via {}",
-//                auth.getName(), payload.via());
-//
-//        IndirizzoResponseDTO created = indirizziService.save(payload);
-//
-//        log.info("Indirizzo creato: ID={}, Via={}", created.id(), created.via());
-//        return created;
-//    }
+    /**
+     * NOTA: Gli indirizzi NON vengono creati singolarmente tramite POST /indirizzi.
+     * Vengono creati e gestiti esclusivamente tramite gli endpoint POST/PUT /clienti.
+     * Un cliente può avere fino a 2 indirizzi: sede legale e sede operativa.
+     */
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")

@@ -12,17 +12,12 @@ import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsWithListDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.LoginResponseDTO;
 import it.epicode.bw2.epicenergyservices.entities.Utente;
-import it.epicode.bw2.epicenergyservices.exceptions.ValidationException;
 import it.epicode.bw2.epicenergyservices.services.AuthService;
 import it.epicode.bw2.epicenergyservices.services.UtentiService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -94,20 +89,9 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ErrorsWithListDTO.class))
             )
     })
-
-
-    public Utente register(@RequestBody @Valid RegisterDTO payload,
-                           BindingResult validationResult) {
-        // Gestisci errori di validazione
-        if (validationResult.hasErrors()) {
-            List<String> errors = validationResult.getFieldErrors()
-                    .stream()
-                    .map(error -> error.getDefaultMessage())
-                    .collect(Collectors.toList());
-            throw new ValidationException(errors);
-        }
-
-        // Se validazione OK, registra l'utente
+    public Utente register(@RequestBody @Valid RegisterDTO payload) {
+        // La validazione è ora gestita automaticamente da ErrorsHandler
+        // Se ci sono errori, MethodArgumentNotValidException viene lanciata automaticamente
         Utente saved = this.utentiService.addUtente(payload, "USER");
         return saved;
     }
