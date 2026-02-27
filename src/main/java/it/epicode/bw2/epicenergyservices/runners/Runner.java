@@ -30,6 +30,9 @@ public class Runner implements CommandLineRunner {
     private final UtentiService utentiService;
     private final StatoFatturaService statoFatturaService;
 
+    @Value("${app.seed.enabled:true}")
+    private boolean seedEnabled;
+    
     @Value("${admin.username}")
     private String adminUsername;
     @Value("${admin.name}")
@@ -50,6 +53,11 @@ public class Runner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (!seedEnabled) {
+            System.out.println("Seeding disabilitato (app.seed.enabled=false)");
+            return;
+        }
+        
         System.out.println("Inizio seeding dei dati...");
         
         // Crea ruolo USER
