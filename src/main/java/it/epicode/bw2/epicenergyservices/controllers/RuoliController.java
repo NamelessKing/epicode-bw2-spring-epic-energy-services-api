@@ -15,11 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Solo ADMIN può accedere a questi endpoint
  */
 @RestController
-@RequestMapping("/api/ruoli")
+@RequestMapping("/ruoli")
 @Tag(name = "Ruoli", description = "Gestione ruoli utenti (ADMIN only)")
 @SecurityRequirement(name = "Bearer Authentication")
 public class RuoliController {
@@ -31,6 +33,22 @@ public class RuoliController {
         this.ruoliService = ruoliService;
     }
 
+    /**
+     * Lista tutti i ruoli (ADMIN only)
+     */
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Lista tutti i ruoli (ADMIN only)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista ruoli recuperata"),
+            @ApiResponse(responseCode = "403", description = "Accesso negato (non ADMIN)")
+    })
+    public List<RuoliDTO> getAllRuoli() {
+        return ruoliService.getAllRuoli()
+                .stream()
+                .map(this::toRuoliDTO)
+                .toList();
+    }
 
     /**
      * Crea un nuovo ruolo (ADMIN only)

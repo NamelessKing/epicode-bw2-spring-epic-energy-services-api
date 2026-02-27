@@ -4,6 +4,7 @@ import it.epicode.bw2.epicenergyservices.dto.request.ClienteCreateDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.ClienteUpdateDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateLogoDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.EmailDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteResponseDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteListItemDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteSearchDTO;
@@ -13,6 +14,7 @@ import it.epicode.bw2.epicenergyservices.entities.TipoAzienda;
 import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.ClienteRepository;
+import lombok.extern.slf4j.Slf4j;
 import it.epicode.bw2.epicenergyservices.specifications.ClienteSpecification;
 import it.epicode.bw2.epicenergyservices.tools.EmailSender;
 import lombok.extern.slf4j.Slf4j;
@@ -298,5 +300,30 @@ public class ClienteService {
         cliente.setCancellato(false);
         Cliente saved = clienteRepository.save(cliente);
         return toResponseDTO(saved);
+    }
+
+    //sendEmail (INVIA EMAIL AL CONTATTO CLIENTE)
+    public void sendEmailToCliente(Long clienteId, EmailDTO emailDTO) {
+        Cliente cliente = findClienteById(clienteId);
+        
+        // Valida email contatto
+        if (cliente.getEmailContatto() == null || cliente.getEmailContatto().isEmpty()) {
+            throw new BadRequestException("Cliente non ha email di contatto configurata");
+        }
+        
+        try {
+            // Invia email tramite Mailgun
+            mailgun.sendCustomEmail(
+                cliente.getEmailContatto(),
+                emailDTO.soggetto(),
+                emailDTO.corpo()
+            );
+            log.info("✅ Email inviata con successo a: {} - Soggetto: {}", 
+                    cliente.getEmailContatto(), emailDTO.soggetto());
+        } catch (Exception ex) {
+            log.error("Errore nell'invio email a: {} - Error: {}",
+                    cliente.getEmailContatto(), ex.getMessage(), ex);
+            throw new BadRequestException("Errore nell'invio dell'email: " + ex.getMessage());
+        }
     }
 }

@@ -12,6 +12,7 @@ import it.epicode.bw2.epicenergyservices.dto.request.ClienteCreateDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.ClienteUpdateDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateContattoDTO;
 import it.epicode.bw2.epicenergyservices.dto.request.UpdateLogoDTO;
+import it.epicode.bw2.epicenergyservices.dto.request.EmailDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteResponseDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteListItemDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ClienteSearchDTO;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -230,5 +232,20 @@ public class ClienteController {
     })
     public ClienteResponseDTO restoreCliente(@PathVariable Long id) {
         return clienteService.restoreCliente(id);
+    }
+
+    @PostMapping("/{id}/email")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Invia email al contatto cliente", description = "ADMIN: Invia email al contatto principale del cliente (via Mailgun)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Email inviata con successo"),
+            @ApiResponse(responseCode = "404", description = "Cliente non trovato"),
+            @ApiResponse(responseCode = "400", description = "Dati email non validi")
+    })
+    public ResponseEntity<String> sendEmailToCliente(
+            @PathVariable Long id,
+            @RequestBody @Validated EmailDTO payload) {
+        clienteService.sendEmailToCliente(id, payload);
+        return ResponseEntity.ok("Email inviata con successo al contatto del cliente");
     }
 }
