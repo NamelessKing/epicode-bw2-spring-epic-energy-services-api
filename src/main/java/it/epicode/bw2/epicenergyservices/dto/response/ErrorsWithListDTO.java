@@ -1,5 +1,6 @@
 package it.epicode.bw2.epicenergyservices.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,7 +20,12 @@ import java.util.List;
  * }
  */
 public record ErrorsWithListDTO(
+    @Schema(description = "Messaggio di errore generale", example = "Errori di validazione")
     String message,
+    
+    @Schema(description = "Timestamp dell'errore", example = "2026-02-27T14:30:45.123456")
     LocalDateTime timestamp,
+    
+    @Schema(description = "Lista dettagliata dei messaggi di errore", example = "[\"La ragione sociale è obbligatoria\", \"L'email non è valida\"]")
     List<String> errors
 ) {}

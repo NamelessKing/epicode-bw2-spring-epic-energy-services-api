@@ -1,5 +1,6 @@
 package it.epicode.bw2.epicenergyservices.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 /**
@@ -13,6 +14,9 @@ import java.time.LocalDateTime;
  * }
  */
 public record ErrorsDTO(
+    @Schema(description = "Messaggio di errore", example = "cliente con id: 999 non trovato.")
     String message,
+    
+    @Schema(description = "Timestamp dell'errore", example = "2026-02-27T14:30:45.123456")
     LocalDateTime timestamp
 ) {}
