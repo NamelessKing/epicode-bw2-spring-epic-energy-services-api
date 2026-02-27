@@ -5,6 +5,9 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public record FatturaDTO(
+        @NotNull(message = "ID cliente obbligatorio")
+        Long clienteId,
+
         @NotNull
         @PastOrPresent
         LocalDate data,

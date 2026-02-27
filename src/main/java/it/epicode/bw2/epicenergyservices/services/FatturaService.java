@@ -136,9 +136,13 @@ public class FatturaService {
 
 
     public Page<Fattura> getFatture(Pageable pageable) {
-
-
         return this.fatturaRepository.findAll(pageable);
     }
 
+    //delete fattura
+    public void deleteFattura(long id) {
+        Fattura fattura = fatturaRepository.findFatturaById(id);
+        if (fattura == null) throw new NotFoundException("Fattura non trovata");
+        fatturaRepository.delete(fattura);
+    }
 }

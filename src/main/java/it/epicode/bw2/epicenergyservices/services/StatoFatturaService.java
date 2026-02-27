@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class StatoFatturaService {
 
@@ -54,6 +56,24 @@ public class StatoFatturaService {
     //get all
     public Page<StatoFattura> getAllStatiFattura(Pageable pageable) {
         return statoFatturaRepository.findAll(pageable);
+    }
+
+    //get all list (senza paginazione)
+    public List<StatoFattura> findAll() {
+        return statoFatturaRepository.findAll();
+    }
+
+    //update stato fattura
+    public StatoFattura updateStatoFattura(long id, StatoFatturaDTO payload) {
+        StatoFattura stato = statoFatturaRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Stato fattura non trovato"));
+        
+        if (statoFatturaRepository.existsByStato(payload.stato())) {
+            throw new BadRequestException("Lo stato fattura inserito esiste gia.");
+        }
+        
+        stato.setStato(payload.stato());
+        return statoFatturaRepository.save(stato);
     }
 
     //controlla se esiste
