@@ -154,11 +154,18 @@ public class ClienteService {
         );
 
         Cliente saved = clienteRepository.save(cliente);
-        try {
-            this.mailgun.sendRegistration(saved);
-        } catch (Exception ex) {
-            log.error("Errore nell'invio della mail");
-        }
+        
+        // ⚠️ EMAIL DISABILITATA - Presentazione in corso
+        // TODO: Riabilitare dopo sistemazione dipendenza Mailgun
+        // try {
+        //     this.mailgun.sendRegistration(saved);
+        //     log.info("✅ Email di registrazione inviata a: {}", saved.getEmail());
+        // } catch (Exception ex) {
+        //     log.error("❌ Errore nell'invio email: {}", ex.getMessage());
+        // }
+        
+        log.info("✅ Cliente salvato con ID: {} - Email DISABILITATA", saved.getId());
+        
         return toResponseDTO(saved);
     }
 
@@ -311,19 +318,22 @@ public class ClienteService {
             throw new BadRequestException("Cliente non ha email di contatto configurata");
         }
         
-        try {
-            // Invia email tramite Mailgun
-            mailgun.sendCustomEmail(
-                cliente.getEmailContatto(),
-                emailDTO.soggetto(),
-                emailDTO.corpo()
-            );
-            log.info("✅ Email inviata con successo a: {} - Soggetto: {}", 
-                    cliente.getEmailContatto(), emailDTO.soggetto());
-        } catch (Exception ex) {
-            log.error("Errore nell'invio email a: {} - Error: {}",
-                    cliente.getEmailContatto(), ex.getMessage(), ex);
-            throw new BadRequestException("Errore nell'invio dell'email: " + ex.getMessage());
-        }
+        // ⚠️ EMAIL DISABILITATA - Presentazione in corso
+        // try {
+        //     mailgun.sendCustomEmail(
+        //         cliente.getEmailContatto(),
+        //         emailDTO.soggetto(),
+        //         emailDTO.corpo()
+        //     );
+        //     log.info("✅ Email inviata con successo a: {} - Soggetto: {}", 
+        //             cliente.getEmailContatto(), emailDTO.soggetto());
+        // } catch (Exception ex) {
+        //     log.error("Errore nell'invio email a: {} - Error: {}",
+        //             cliente.getEmailContatto(), ex.getMessage(), ex);
+        //     throw new BadRequestException("Errore nell'invio dell'email: " + ex.getMessage());
+        // }
+        
+        log.info("⚠️ Email DISABILITATA - Destinatario: {} - Soggetto: {} [SIMULAZIONE]", 
+                cliente.getEmailContatto(), emailDTO.soggetto());
     }
 }
