@@ -14,28 +14,34 @@ import it.epicode.bw2.epicenergyservices.exceptions.BadRequestException;
 import it.epicode.bw2.epicenergyservices.exceptions.NotFoundException;
 import it.epicode.bw2.epicenergyservices.repositories.ClienteRepository;
 import it.epicode.bw2.epicenergyservices.specifications.ClienteSpecification;
+import it.epicode.bw2.epicenergyservices.tools.EmailSender;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@Slf4j
 public class ClienteService {
 
     private final IndirizziService indirizziService;
     private final ClienteRepository clienteRepository;
+    private final ProvinceService provinceService;
+    private final ComuniService comuniService;
+    private final EmailSender mailgun;
 
 
     @Autowired
-    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository) {
+    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository, ProvinceService provinceService, ComuniService comuniService, EmailSender mailgun) {
         this.indirizziService = indirizziService;
         this.clienteRepository = clienteRepository;
-
+        this.provinceService = provinceService;
+        this.comuniService = comuniService;
+        this.mailgun = mailgun;
     }
 
     public ClienteResponseDTO toResponseDTO(Cliente cliente) {
@@ -146,7 +152,12 @@ public class ClienteService {
                 indirizzoOperativa
         );
 
-        Cliente saved = clienteRepository.save(cliente);
+        Cliente saved = clienteRepository.save(cliente);// TODO: INVIARE EMAIL DI BENVENUTO
+        try {
+            this.mailgun.sendRegistration(saved);
+        } catch (Exception ex) {
+            log.error("Errore nell'invio della mail");
+        }
         return toResponseDTO(saved);
     }
 
@@ -278,8 +289,11 @@ public class ClienteService {
     //delete (SOFT DELETE)
     public void deleteCliente(Long id) {
         Cliente cliente = findClienteById(id);
-        cliente.setCancellato(true);
-        clienteRepository.save(cliente);
+        
+
+        cliente.setStato(isActive);
+
+        return clienteRepository.save(cliente);
     }
 
     //restore (RIATTIVA CLIENTE CANCELLATO)

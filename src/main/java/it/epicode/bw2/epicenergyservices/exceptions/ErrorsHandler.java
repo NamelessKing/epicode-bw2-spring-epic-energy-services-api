@@ -4,9 +4,11 @@ import it.epicode.bw2.epicenergyservices.dto.response.ErrorsDTO;
 import it.epicode.bw2.epicenergyservices.dto.response.ErrorsWithListDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 public class ErrorsHandler {
-
+    
     /**
      * 400 - Validation Exception (con lista errori dettagliati)
      * Gestisce ValidationException personalizzata con lista di errori
@@ -84,6 +86,7 @@ public class ErrorsHandler {
      * 403 - Authorization Denied Exception
      * Gestisce accesso negato per permessi insufficienti
      */
+
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorsDTO> handleForbidden(AuthorizationDeniedException ex) {
         ErrorsDTO response = new ErrorsDTO(

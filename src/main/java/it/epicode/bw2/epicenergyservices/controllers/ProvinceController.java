@@ -55,6 +55,7 @@ public class ProvinceController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorsDTO.class))
             )
     })
+    //metodo per tornare tutte le province
     public Page<ProvinciaResponseDTO> getAll(
             @Parameter(description = "Numero pagina (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int page,
@@ -220,4 +221,6 @@ public class ProvinceController {
         provinceService.findByIdAndDelete(id);
         log.info("Provincia ID {} eliminata definitivamente", id);
     }
+
+
 }
