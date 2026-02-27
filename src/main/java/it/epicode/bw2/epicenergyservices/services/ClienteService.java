@@ -22,6 +22,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -30,17 +32,14 @@ public class ClienteService {
 
     private final IndirizziService indirizziService;
     private final ClienteRepository clienteRepository;
-    private final ProvinceService provinceService;
-    private final ComuniService comuniService;
     private final EmailSender mailgun;
 
 
     @Autowired
-    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository, ProvinceService provinceService, ComuniService comuniService, EmailSender mailgun) {
+    public ClienteService(IndirizziService indirizziService, ClienteRepository clienteRepository,  EmailSender mailgun) {
         this.indirizziService = indirizziService;
         this.clienteRepository = clienteRepository;
-        this.provinceService = provinceService;
-        this.comuniService = comuniService;
+
         this.mailgun = mailgun;
     }
 
@@ -152,7 +151,7 @@ public class ClienteService {
                 indirizzoOperativa
         );
 
-        Cliente saved = clienteRepository.save(cliente);// TODO: INVIARE EMAIL DI BENVENUTO
+        Cliente saved = clienteRepository.save(cliente);
         try {
             this.mailgun.sendRegistration(saved);
         } catch (Exception ex) {
@@ -181,7 +180,7 @@ public class ClienteService {
         return new PageImpl<>(dtos, pageable, clienti.getTotalElements());
     }
 
-    //findAll con filtri (paginato, clienti attivi)
+    // Ricerca clienti con filtri dinamici
     public Page<ClienteListItemDTO> findAllActiveWithFilters(
             Pageable pageable,
             String nome,
@@ -194,22 +193,22 @@ public class ClienteService {
             Long provinciaId,
             TipoAzienda tipoAzienda
     ) {
+        // Crea la Specification con tutti i filtri
         Specification<Cliente> spec = ClienteSpecification.withFilters(
-                nome,
-                fatturatoMin,
-                fatturatoMax,
-                dataInserimentoDa,
-                dataInserimentoA,
-                dataContattoDa,
-                dataContattoA,
-                provinciaId,
-                tipoAzienda
+                nome, fatturatoMin, fatturatoMax,
+                dataInserimentoDa, dataInserimentoA,
+                dataContattoDa, dataContattoA,
+                provinciaId, tipoAzienda
         );
 
+        // Esegue la query con Specification + paginazione
         Page<Cliente> clienti = clienteRepository.findAll(spec, pageable);
+
+        // Converte Entity in DTO per ridurre il payload
         List<ClienteListItemDTO> dtos = clienti.getContent().stream()
                 .map(this::toListItemDTO)
                 .toList();
+
         return new PageImpl<>(dtos, pageable, clienti.getTotalElements());
     }
 
@@ -289,11 +288,8 @@ public class ClienteService {
     //delete (SOFT DELETE)
     public void deleteCliente(Long id) {
         Cliente cliente = findClienteById(id);
-        
-
-        cliente.setStato(isActive);
-
-        return clienteRepository.save(cliente);
+        cliente.setCancellato(true);
+        clienteRepository.save(cliente);
     }
 
     //restore (RIATTIVA CLIENTE CANCELLATO)

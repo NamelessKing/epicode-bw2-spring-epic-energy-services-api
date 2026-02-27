@@ -71,64 +71,66 @@ public class ClienteController {
     public Page<ClienteListItemDTO> getAllActive(
             @Parameter(description = "Numero pagina (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int page,
-
+            
             @Parameter(description = "Elementi per pagina (max 100)", example = "10")
             @RequestParam(defaultValue = "10") int size,
-
+            
             @Parameter(description = "Ordinamento: campo,direzione", example = "ragioneSociale,asc")
             @RequestParam(defaultValue = "ragioneSociale,asc") String sort,
-
+            
+            // Filtri opzionali
             @Parameter(description = "Filtra per nome (case-insensitive)", example = "Acme")
             @RequestParam(required = false) String nome,
-
+            
             @Parameter(description = "Fatturato minimo", example = "50000")
             @RequestParam(required = false) Double fatturatoMin,
-
+            
             @Parameter(description = "Fatturato massimo", example = "200000")
             @RequestParam(required = false) Double fatturatoMax,
-
-            @Parameter(description = "Data inserimento da (formato: yyyy-MM-dd)", example = "2024-01-01")
+            
+            @Parameter(description = "Data inserimento da (yyyy-MM-dd)", example = "2024-01-01")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInserimentoDa,
-
-            @Parameter(description = "Data inserimento a (formato: yyyy-MM-dd)", example = "2024-12-31")
+            
+            @Parameter(description = "Data inserimento a (yyyy-MM-dd)", example = "2024-12-31")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInserimentoA,
-
-            @Parameter(description = "Data ultimo contatto da (formato: yyyy-MM-dd)", example = "2024-01-01")
+            
+            @Parameter(description = "Data ultimo contatto da (yyyy-MM-dd)", example = "2024-01-01")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataContattoDa,
-
-            @Parameter(description = "Data ultimo contatto a (formato: yyyy-MM-dd)", example = "2024-12-31")
+            
+            @Parameter(description = "Data ultimo contatto a (yyyy-MM-dd)", example = "2024-12-31")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataContattoA,
-
-            @Parameter(description = "ID provincia sede legale", example = "58")
+            
+            @Parameter(description = "ID provincia sede legale", example = "15")
             @RequestParam(required = false) Long provinciaId,
-
-            @Parameter(description = "Tipo azienda (SPA, SRL, SAS, SNC, PA, ASL)", example = "SRL")
+            
+            @Parameter(description = "Tipo azienda (SPA, SRL, PA, ecc)", example = "SPA")
             @RequestParam(required = false) TipoAzienda tipoAzienda
     ) {
+        // Valida i parametri
         int safePage = Math.max(0, page);
         int safeSize = size <= 0 || size > 100 ? 20 : size;
-
+        
+        // Parsa il parametro sort (formato: "campo,direzione")
         String[] sortParts = sort.split(",");
         String sortField = sortParts[0].trim();
         String sortDir = sortParts.length > 1 ? sortParts[1].trim() : "asc";
-
+        
+        // Crea l'oggetto Pageable
         Pageable pageable = PageRequest.of(
                 safePage,
                 safeSize,
-                "desc".equalsIgnoreCase(sortDir) ? Sort.by(sortField).descending() : Sort.by(sortField).ascending()
+                "desc".equalsIgnoreCase(sortDir) 
+                    ? Sort.by(sortField).descending() 
+                    : Sort.by(sortField).ascending()
         );
-
+        
+        // Chiama il service con tutti i filtri
         return clienteService.findAllActiveWithFilters(
                 pageable,
-                nome,
-                fatturatoMin,
-                fatturatoMax,
-                dataInserimentoDa,
-                dataInserimentoA,
-                dataContattoDa,
-                dataContattoA,
-                provinciaId,
-                tipoAzienda
+                nome, fatturatoMin, fatturatoMax,
+                dataInserimentoDa, dataInserimentoA,
+                dataContattoDa, dataContattoA,
+                provinciaId, tipoAzienda
         );
     }
 

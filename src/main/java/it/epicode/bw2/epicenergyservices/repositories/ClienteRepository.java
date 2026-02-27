@@ -11,23 +11,36 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository per accedere ai dati di Cliente nel database.
+ * Spring genera automaticamente le query dal nome dei metodi.
+ * JpaSpecificationExecutor permette di usare Specification per filtri dinamici.
+ */
 @Repository
-public interface ClienteRepository extends JpaRepository<Cliente, Long>, JpaSpecificationExecutor<Cliente> {
+public interface ClienteRepository extends
+        JpaRepository<Cliente, Long>,
+        JpaSpecificationExecutor<Cliente>
+{
 
-    Optional<Cliente> findById(Long id);
-
+    // Trova cliente per ID (solo se non cancellato)
     Optional<Cliente> findByIdAndCancellatoFalse(Long id);
 
+    // Trova tutti i clienti attivi (non cancellati), paginati
     Page<Cliente> findByCancellatoFalse(Pageable pageable);
 
+    // Ricerca rapida per nome (case-insensitive) - usato per autocomplete
     List<Cliente> findByRagioneSocialeContainsIgnoreCaseAndCancellatoFalse(String ragioneSociale);
 
+    // Controlla se un email esiste (per evitare duplicati)
     boolean existsByEmail(String email);
 
+    // Controlla se una email contatto esiste
     boolean existsByEmailContatto(String emailContatto);
 
+    // Controlla se una partita IVA esiste (univoca in Italia)
     boolean existsByPartitaIva(String partitaIva);
 
+    // Conta clienti per tipo (usato per statistiche/dashboard)
     long countByTipo(TipoAzienda tipo);
 
 }

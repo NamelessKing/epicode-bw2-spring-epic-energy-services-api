@@ -11,18 +11,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Specifications per filtri dinamici sui clienti.
- * Permette di costruire query complesse combinando più criteri di ricerca.
+ * Crea i filtri dinamici per cercare clienti.
+ * Ogni metodo statico ritorna una Specification che filtra per un criterio.
+ * Se il valore è null, il filtro non viene applicato.
+ * 
+ * Usato dal Service: ClienteSpecification.withFilters(...).
+ * Passato al Repository: clienteRepository.findAll(spec, pageable).
  */
 public class ClienteSpecification {
 
-    /**
-     * Filtra clienti per nome (LIKE case-insensitive)
-     */
+    // Filtra per nome (LIKE case-insensitive)
     public static Specification<Cliente> hasRagioneSocialeLike(String nome) {
         return (root, query, criteriaBuilder) -> {
             if (nome == null || nome.isBlank()) {
-                return criteriaBuilder.conjunction();
+                return criteriaBuilder.conjunction(); // no filter se null
             }
             return criteriaBuilder.like(
                     criteriaBuilder.lower(root.get("ragioneSociale")),
@@ -31,9 +33,7 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra clienti per fatturato minimo
-     */
+    // Fatturato >= di questo valore
     public static Specification<Cliente> hasFatturatoMin(Double fatturatoMin) {
         return (root, query, criteriaBuilder) -> {
             if (fatturatoMin == null) {
@@ -43,9 +43,7 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra clienti per fatturato massimo
-     */
+    // Fatturato <= di questo valore
     public static Specification<Cliente> hasFatturatoMax(Double fatturatoMax) {
         return (root, query, criteriaBuilder) -> {
             if (fatturatoMax == null) {
@@ -55,9 +53,7 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra clienti per data inserimento da
-     */
+    // Data inserimento >= (da)
     public static Specification<Cliente> hasDataInserimentoDa(LocalDate dataInserimentoDa) {
         return (root, query, criteriaBuilder) -> {
             if (dataInserimentoDa == null) {
@@ -67,9 +63,7 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra clienti per data inserimento a
-     */
+    // Data inserimento <= (a)
     public static Specification<Cliente> hasDataInserimentoA(LocalDate dataInserimentoA) {
         return (root, query, criteriaBuilder) -> {
             if (dataInserimentoA == null) {
@@ -79,9 +73,7 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra clienti per data ultimo contatto da
-     */
+    // Data ultimo contatto >= (da)
     public static Specification<Cliente> hasDataUltimoContattoDa(LocalDate dataContattoDa) {
         return (root, query, criteriaBuilder) -> {
             if (dataContattoDa == null) {
@@ -91,9 +83,7 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra clienti per data ultimo contatto a
-     */
+    // Data ultimo contatto <= (a)
     public static Specification<Cliente> hasDataUltimoContattoA(LocalDate dataContattoA) {
         return (root, query, criteriaBuilder) -> {
             if (dataContattoA == null) {
@@ -103,14 +93,13 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra clienti per provincia della sede legale
-     */
+    // Filtra per provincia (con JOIN)
     public static Specification<Cliente> hasProvinciaId(Long provinciaId) {
         return (root, query, criteriaBuilder) -> {
             if (provinciaId == null) {
                 return criteriaBuilder.conjunction();
             }
+            // JOIN: Cliente -> Indirizzo -> Comune -> Provincia
             Join<Object, Object> sedeLegale = root.join("indirizzoSedeLegale");
             Join<Object, Object> comune = sedeLegale.join("comune");
             Join<Object, Object> provincia = comune.join("provincia");
@@ -118,9 +107,7 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra clienti per tipo azienda
-     */
+    // Filtra per tipo azienda
     public static Specification<Cliente> hasTipoAzienda(TipoAzienda tipo) {
         return (root, query, criteriaBuilder) -> {
             if (tipo == null) {
@@ -130,17 +117,13 @@ public class ClienteSpecification {
         };
     }
 
-    /**
-     * Filtra solo clienti non cancellati
-     */
+    // Esclude i clienti cancellati
     public static Specification<Cliente> isNotCancellato() {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("cancellato"), false);
     }
 
-    /**
-     * Combina tutti i filtri in una singola Specification
-     */
+    // Combina tutti i filtri con AND
     public static Specification<Cliente> withFilters(
             String nome,
             Double fatturatoMin,
@@ -152,6 +135,7 @@ public class ClienteSpecification {
             Long provinciaId,
             TipoAzienda tipoAzienda
     ) {
+        // Combina i filtri: se un parametro è null, viene ignorato
         return Specification
                 .where(isNotCancellato())
                 .and(hasRagioneSocialeLike(nome))
